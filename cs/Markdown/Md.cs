@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Markdown.Renderers;
+using Markdown.Tokens;
 
 namespace Markdown;
 
 public class Md
 {
+    private readonly IRenderer _renderer = new HtmlRenderer();
+    private readonly MarkdownTokenParser _tokenParser = new();
+
     public string Render(string text)
     {
-        throw new NotImplementedException();
+        var tokens = _tokenParser.Parse(text);
+        return _renderer.Render(tokens);
     }
 }
