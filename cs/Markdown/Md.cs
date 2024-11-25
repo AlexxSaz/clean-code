@@ -11,6 +11,6 @@ public class Md
     public string Render(string text)
     {
         var tokens = _tokenParser.Parse(text);
-        return _renderer.Render(tokens);
+        return _renderer.Render(tokens.ToArray());
     }
 }
