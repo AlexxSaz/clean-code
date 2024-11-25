@@ -1,11 +1,25 @@
-﻿using Markdown.Tokens;
+﻿using System.Text;
+using Markdown.Html;
+using Markdown.Tokens;
 
 namespace Markdown.Renderers;
 
 public class HtmlRenderer : IRenderer
 {
-    public string Render(IEnumerable<Token> tokens)
+    private readonly HtmlTagConverter _tagConverter;
+
+    public string Render(IList<MarkdownToken> tokens)
     {
-        throw new NotImplementedException();
+        var tokenBuilder = new StringBuilder();
+
+        foreach (var token in tokens)
+        {
+            if (token.Type is TokenType.Tag)
+                tokenBuilder.Append(_tagConverter.Convert(token.Content, token.IsClosedTag));
+            else
+                tokenBuilder.Append(token.Content);
+        }
+
+        return tokenBuilder.ToString();
     }
 }
