@@ -1,17 +1,8 @@
-using Markdown.Html;
-
 namespace Markdown.Tokens;
 
 public class MarkdownTokenParser
 {
-    private readonly Dictionary<string, IHtmlTag> _markdownTags = new()
-    {
-        {"_", new ItalicTag()},
-        {"__", new BoldTag()},
-        {"#", new HeaderTag()}
-    };
-
-    public IEnumerable<Token> Parse(string text)
+    public IEnumerable<MarkdownToken> Parse(string text)
     {
         var lines = SplitIntoLines(text);
         return ParseLines(lines);
@@ -19,10 +10,10 @@ public class MarkdownTokenParser
 
     private static string[] SplitIntoLines(string text)
     {
-        return text.Split(['\n', '\r']);
+        return text.Split('\n', '\r');
     }
 
-    private IEnumerable<Token> ParseLines(string[] lines)
+    private IEnumerable<MarkdownToken> ParseLines(string[] lines)
     {
         foreach (var line in lines)
         {
@@ -30,64 +21,22 @@ public class MarkdownTokenParser
             {
                 yield return token;
             }
-            yield return CreateNewLineToken();
+            yield return MarkdownToken.GetToken("\n");
         }
     }
 
-    private IEnumerable<Token> ParseLine(string line)
+    private static IEnumerable<MarkdownToken> ParseLine(string line)
     {
-        var words = SplitIntoWords(line);
-        foreach (var word in words)
+        for (var i = 0; i < line.Length; i++)
         {
-            yield return ParseWord(word);
-            yield return CreateSpaceToken();
+            //TODO: Здесь будет реализация разделения строки на токены
+            var currStr = line.Substring(i, 1);
+
+            var isTagToken = MarkdownToken.TryGetTagToken(currStr, out var tagToken);
+            if (isTagToken)
+                yield return tagToken;
+            else
+                yield return MarkdownToken.GetToken(currStr);
         }
-    }
-
-    private static string[] SplitIntoWords(string line)
-    {
-        return line.Split();
-    }
-
-    private Token ParseWord(string word)
-    {
-        return TryParseMarkdownTag(word, out var token) 
-            ? token 
-            : CreateTextToken(word);
-    }
-
-    private bool TryParseMarkdownTag(string value, out Token token)
-    {
-        token = CreateTextToken(value);
-
-        var matchingTag = FindMatchingTag(value);
-        if (matchingTag == null)
-            return false;
-
-        token = matchingTag.ToHtml(value);
-        return true;
-    }
-
-    private IHtmlTag? FindMatchingTag(string value)
-    {
-        return _markdownTags
-            .Where(tag => value.StartsWith(tag.Key))
-            .Select(tag => tag.Value)
-            .FirstOrDefault();
-    }
-
-    private static Token CreateTextToken(string value)
-    {
-        return new Token(value, TokenType.Text);
-    }
-
-    private static Token CreateSpaceToken()
-    {
-        return new Token(" ", TokenType.Space);
-    }
-
-    private static Token CreateNewLineToken()
-    {
-        return new Token("\n", TokenType.NewLine);
     }
 }
