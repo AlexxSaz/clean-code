@@ -1,12 +1,13 @@
 ﻿using System.Text;
 using Markdown.Html;
-using Markdown.Tokens;
+using Markdown.Markdown;
+using Markdown.Markdown.Tokens;
 
 namespace Markdown.Renderers;
 
 public class HtmlRenderer : IRenderer
 {
-    private readonly HtmlTagConverter _tagConverter;
+    private readonly HtmlTagConverter _tagConverter = new();
 
     public string Render(IList<MarkdownToken> tokens)
     {
