@@ -1,4 +1,6 @@
-namespace Markdown.Tokens;
+using Markdown.Markdown.Tokens;
+
+namespace Markdown.Markdown;
 
 public class MarkdownTokenParser
 {
@@ -13,7 +15,7 @@ public class MarkdownTokenParser
         return text.Split('\n', '\r');
     }
 
-    private IEnumerable<MarkdownToken> ParseLines(string[] lines)
+    private static IEnumerable<MarkdownToken> ParseLines(string[] lines)
     {
         foreach (var line in lines)
         {
@@ -21,7 +23,7 @@ public class MarkdownTokenParser
             {
                 yield return token;
             }
-            yield return MarkdownToken.GetToken("\n");
+            yield return MarkdownTokenCreator.CreateSymbolToken("\n");
         }
     }
 
@@ -29,14 +31,9 @@ public class MarkdownTokenParser
     {
         for (var i = 0; i < line.Length; i++)
         {
-            //TODO: Здесь будет реализация разделения строки на токены
-            var currStr = line.Substring(i, 1);
+            var currentSymbol = line.Substring(i, 1);
 
-            var isTagToken = MarkdownToken.TryGetTagToken(currStr, out var tagToken);
-            if (isTagToken)
-                yield return tagToken;
-            else
-                yield return MarkdownToken.GetToken(currStr);
+            yield return MarkdownTokenCreator.CreateSymbolToken(currentSymbol);
         }
     }
 }
