@@ -3,7 +3,7 @@ using Markdown.Markdown.Tokens;
 
 namespace Markdown.Markdown.Processing;
 
-public class MarkdownProcessor
+public class MarkdownProcessor : IMarkdownProcessor
 {
     private readonly IEnumerable<ITokenHandler> _tokenHandlers =
         TokenHandlerFactory.CreateHandlers();
