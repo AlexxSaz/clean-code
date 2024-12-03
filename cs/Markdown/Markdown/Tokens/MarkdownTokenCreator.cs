@@ -1,18 +1,44 @@
-﻿namespace Markdown.Markdown.Tokens;
+﻿using Markdown.Html.Tags;
 
-public class MarkdownTokenCreator
+namespace Markdown.Markdown.Tokens;
+
+internal static class MarkdownTokenCreator
 {
-    public static MarkdownToken CreateSymbolToken(string content)
+    public static IToken CreateCloseTag(IToken token, TagType tagType) =>
+        new MarkdownToken(token.Content, token.Type, tagType, IsCloseTag: true);
+
+    public static IToken? CreateTextToken(string content) =>
+        new MarkdownToken(content, TokenType.Text);
+
+    public static bool TryCreateSymbolToken(string content, out IToken? token)
     {
-        return content switch
+        if (int.TryParse(content, out _))
         {
-            " " => new MarkdownToken(content, TokenType.Space),
-            "_" => new MarkdownToken(content, TokenType.TagPart),
-            "#" => new MarkdownToken(content, TokenType.Header),
-            "\n" => new MarkdownToken(content, TokenType.NewLine),
-            "\r" => new MarkdownToken(content, TokenType.NewLine),
-            "\\" => new MarkdownToken(content, TokenType.Escape),
-            _ => new MarkdownToken(content, TokenType.Letter)
-        };
+            token = new MarkdownToken(content, TokenType.Digit);
+            return true;
+        }
+
+        switch (content)
+        {
+            case " ":
+                token = new MarkdownToken(content, TokenType.Space);
+                break;
+            case "\\":
+                token = new MarkdownToken(content, TokenType.Escape);
+                break;
+            default:
+                token = null;
+                break;
+        }
+
+        ;
+
+        return token != null;
     }
+
+    public static IToken? NewLine =>
+        new MarkdownToken("\n", TokenType.NewLine);
+
+    public static IToken? CreateTag(string content, TagType tagType) =>
+        new MarkdownToken(content, TokenType.Tag, tagType);
 }

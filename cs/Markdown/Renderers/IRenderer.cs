@@ -3,5 +3,5 @@
 namespace Markdown.Renderers;
 public interface IRenderer
 {
-    string Render(IList<MarkdownToken> document);
+    string Render(List<IToken> document);
 }

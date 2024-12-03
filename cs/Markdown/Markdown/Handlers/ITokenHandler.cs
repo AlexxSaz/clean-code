@@ -1,10 +1,9 @@
-﻿using Markdown.Markdown.Processing;
+﻿using System.Collections;
 using Markdown.Markdown.Tokens;
 
 namespace Markdown.Markdown.Handlers;
 
 public interface ITokenHandler
 {
-    bool CanHandle(MarkdownToken? token);
-    bool Handle(IProcessingContext context);
+    List<IToken> Handle(IList<IToken> tokens);
 }

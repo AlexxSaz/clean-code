@@ -1,8 +1,5 @@
-﻿namespace Markdown.Markdown.Tokens;
+﻿using Markdown.Html.Tags;
 
-public class MarkdownToken(string content, TokenType type, bool isClosedTag = false)
-{
-    public string Content { get; } = content;
-    public TokenType Type { get; } = type;
-    public bool IsClosedTag { get; } = isClosedTag;
-}
+namespace Markdown.Markdown.Tokens;
+
+public record MarkdownToken(string Content, TokenType Type, TagType TagType = TagType.None, bool IsCloseTag = false) : IToken;

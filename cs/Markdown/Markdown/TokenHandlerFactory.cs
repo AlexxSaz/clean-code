@@ -6,8 +6,8 @@ public static class TokenHandlerFactory
 {
     private static readonly ITokenHandler[] _handlers =
     [
-        new EmphasisHandler(),
         new EscapeSequenceHandler(),
+        new EmphasisHandler(),
         new HeaderHandler()
     ];
 

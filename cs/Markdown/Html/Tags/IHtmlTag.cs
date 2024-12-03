@@ -1,6 +1,8 @@
-﻿namespace Markdown.Html.Tags;
+﻿using Markdown.Markdown.Tokens;
+
+namespace Markdown.Html.Tags;
 
 public interface IHtmlTag
 {
-    bool TryConvert(string content, bool isClosedTag, out string resultContent);
+    bool TryConvert(IToken token, out string resultContent);
 }

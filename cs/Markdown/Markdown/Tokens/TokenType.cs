@@ -3,11 +3,12 @@
 public enum TokenType
 {
     Tag,
-    Word,
+    Text,
     NewLine,
     Space,
     Letter,
     Escape,
     TagPart,
-    Header
+    Header,
+    Digit
 }

@@ -1,17 +1,41 @@
-﻿using Markdown.Markdown.Processing;
+﻿using Markdown.Html.Tags;
 using Markdown.Markdown.Tokens;
 
 namespace Markdown.Markdown.Handlers;
 
-public class HeaderHandler : ITokenHandler
+internal class HeaderHandler : ITokenHandler
 {
-    public bool CanHandle(MarkdownToken? token)
+    public List<IToken> Handle(IList<IToken> tokens)
     {
-        throw new NotImplementedException();
-    }
+        IToken? previousToken = null;
+        var handledTokens = new List<IToken>();
+        using var enumerator = tokens.GetEnumerator();
+        enumerator.MoveNext();
 
-    public bool Handle(IProcessingContext context)
-    {
-        throw new NotImplementedException();
+        while (enumerator.Current != null)
+        {
+            var currentToken = enumerator.Current;
+
+            if ((previousToken == null || previousToken.Type is TokenType.NewLine) &&
+                currentToken.Type is TokenType.Header)
+            {
+                handledTokens.Add(MarkdownTokenCreator.CreateTag("#", TagType.Header));
+                enumerator.MoveNext();
+                while (!(currentToken.Type is TokenType.NewLine))
+                {
+                    currentToken = enumerator.Current;
+                    handledTokens.Add(currentToken);
+                    enumerator.MoveNext();
+                }
+
+                handledTokens.Add(MarkdownTokenCreator.CreateCloseTag(currentToken, TagType.Header));
+            }
+
+            handledTokens.Add(currentToken);
+            previousToken = currentToken;
+            enumerator.MoveNext();
+        }
+
+        return handledTokens;
     }
 }

@@ -9,16 +9,16 @@ public class HtmlRenderer : IRenderer
 {
     private readonly HtmlTagConverter _tagConverter = new();
 
-    public string Render(IList<MarkdownToken> tokens)
+    public string Render(List<IToken> tokens)
     {
         var tokenBuilder = new StringBuilder();
 
         foreach (var token in tokens)
         {
-            if (token.Type is TokenType.Tag)
-                tokenBuilder.Append(_tagConverter.Convert(token.Content, token.IsClosedTag));
+            if (token?.Type is TokenType.Tag)
+                tokenBuilder.Append(_tagConverter.Convert(token));
             else
-                tokenBuilder.Append(token.Content);
+                tokenBuilder.Append(token?.Content);
         }
 
         return tokenBuilder.ToString();

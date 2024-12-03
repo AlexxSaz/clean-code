@@ -1,5 +1,6 @@
 using Markdown.Markdown;
-using Markdown.Markdown.Processing;
+using Markdown.Markdown.Handlers;
+using Markdown.Markdown.Tokens;
 using Markdown.Renderers;
 
 namespace Markdown;
@@ -7,15 +8,17 @@ namespace Markdown;
 public class Md
 {
     private readonly IRenderer _renderer = new HtmlRenderer();
-    private readonly MarkdownTokenParser _tokenParser = new();
-    private readonly MarkdownProcessor _markdownProcessor = new();
+    private readonly TextTokenizer _textTokenizer = new();
+
+    private readonly IEnumerable<ITokenHandler> _handlers =
+        TokenHandlerFactory.CreateHandlers();
 
     public string Render(string text)
     {
-        var tokens = _tokenParser
-            .Parse(text)
-            .ToArray();
-        var processedTokens = _markdownProcessor.Process(tokens);
-        return _renderer.Render(processedTokens);
+        var handledTokens = new List<IToken>();
+        var tokens = _textTokenizer.Tokenize(text).ToList();
+        foreach (var handler in _handlers)
+            tokens = handler.Handle(tokens);
+        return _renderer.Render(tokens);
     }
 }
