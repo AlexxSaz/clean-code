@@ -6,25 +6,28 @@ public class EscapeSequenceHandler : ITokenHandler
 {
     public List<IToken> Handle(IList<IToken> tokens)
     {
-        IToken previousToken = null;
+        IToken? previousToken = null;
         var handledTokens = new List<IToken>();
-        foreach(var token in tokens)
+        for (var i = 0; i < tokens.Count; i++)
         {
+            var currentToken = tokens[i];
             if (previousToken is { Type: TokenType.Escape } &&
-                token?.Type is TokenType.Tag or TokenType.Escape)
+                currentToken.Type is TokenType.Tag or TokenType.Escape)
             {
-                handledTokens.Add(MarkdownTokenCreator.CreateTextToken(token.Content));
+                handledTokens.Add(MarkdownTokenCreator.CreateTextToken(currentToken.Content));
+                previousToken = null;
             }
-            else if (token?.Type is TokenType.Escape)
+            else if (currentToken.Type is TokenType.Escape)
             {
-                previousToken = token;
+                previousToken = currentToken;
             }
             else
             {
-                handledTokens.Add(token);
-                previousToken = token;
+                handledTokens.Add(currentToken);
+                previousToken = currentToken;
             }
         }
+
         return handledTokens;
     }
 }

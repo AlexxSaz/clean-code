@@ -7,7 +7,7 @@ internal static class MarkdownTokenCreator
     public static IToken CreateCloseTag(IToken token, TagType tagType) =>
         new MarkdownToken(token.Content, token.Type, tagType, IsCloseTag: true);
 
-    public static IToken? CreateTextToken(string content) =>
+    public static IToken CreateTextToken(string content) =>
         new MarkdownToken(content, TokenType.Text);
 
     public static bool TryCreateSymbolToken(string content, out IToken? token)
@@ -18,27 +18,19 @@ internal static class MarkdownTokenCreator
             return true;
         }
 
-        switch (content)
+        token = content switch
         {
-            case " ":
-                token = new MarkdownToken(content, TokenType.Space);
-                break;
-            case "\\":
-                token = new MarkdownToken(content, TokenType.Escape);
-                break;
-            default:
-                token = null;
-                break;
-        }
-
-        ;
+            " " => new MarkdownToken(content, TokenType.Space),
+            "\\" => new MarkdownToken(content, TokenType.Escape),
+            _ => null
+        };
 
         return token != null;
     }
 
-    public static IToken? NewLine =>
+    public static IToken NewLine =>
         new MarkdownToken("\n", TokenType.NewLine);
 
-    public static IToken? CreateTag(string content, TagType tagType) =>
+    public static IToken CreateTag(string content, TagType tagType) =>
         new MarkdownToken(content, TokenType.Tag, tagType);
 }

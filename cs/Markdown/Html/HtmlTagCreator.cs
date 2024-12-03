@@ -2,7 +2,7 @@ using Markdown.Html.Tags;
 
 namespace Markdown.Html;
 
-public class HtmlTagCreator
+public static class HtmlTagCreator
 {
     private static readonly Dictionary<TagType, string> tagToString = new()
     {

@@ -9,31 +9,32 @@ internal class HeaderHandler : ITokenHandler
     {
         IToken? previousToken = null;
         var handledTokens = new List<IToken>();
-        using var enumerator = tokens.GetEnumerator();
-        enumerator.MoveNext();
 
-        while (enumerator.Current != null)
+        for (var i = 0; i < tokens.Count; i++)
         {
-            var currentToken = enumerator.Current;
+            var currentToken = tokens[i];
 
             if ((previousToken == null || previousToken.Type is TokenType.NewLine) &&
-                currentToken.Type is TokenType.Header)
+                currentToken.Type is TokenType.Tag && currentToken.TagType is TagType.Header)
             {
-                handledTokens.Add(MarkdownTokenCreator.CreateTag("#", TagType.Header));
-                enumerator.MoveNext();
-                while (!(currentToken.Type is TokenType.NewLine))
+                var openHeaderTag = MarkdownTokenCreator.CreateTag("#", TagType.Header);
+                handledTokens.Add(openHeaderTag);
+                i++;
+                currentToken = tokens[i];
+                if (currentToken.Type is TokenType.Space)
+                    i++;
+                
+                while (i < tokens.Count && currentToken.Type is not TokenType.NewLine)
                 {
-                    currentToken = enumerator.Current;
+                    currentToken = tokens[i];
                     handledTokens.Add(currentToken);
-                    enumerator.MoveNext();
+                    i++;
                 }
 
-                handledTokens.Add(MarkdownTokenCreator.CreateCloseTag(currentToken, TagType.Header));
+                handledTokens.Add(MarkdownTokenCreator.CreateCloseTag(openHeaderTag, TagType.Header));
             }
-
-            handledTokens.Add(currentToken);
+            else handledTokens.Add(currentToken);
             previousToken = currentToken;
-            enumerator.MoveNext();
         }
 
         return handledTokens;

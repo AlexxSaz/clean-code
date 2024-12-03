@@ -6,9 +6,6 @@ public enum TokenType
     Text,
     NewLine,
     Space,
-    Letter,
     Escape,
-    TagPart,
-    Header,
     Digit
 }

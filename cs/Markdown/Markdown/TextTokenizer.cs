@@ -8,16 +8,20 @@ public class TextTokenizer : ITokenizer
 {
     public IEnumerable<IToken> Tokenize(string text)
     {
-        foreach (var line in SplitIntoLines(text))
+        var lines = SplitIntoLines(text);
+        for (var i = 0; i < lines.Length; i++)
         {
+            var line = lines[i];
             foreach (var token in TokenizeLine(line))
             {
                 yield return token;
             }
 
-            yield return MarkdownTokenCreator.NewLine;
+            if (i < lines.Length - 1)
+                yield return MarkdownTokenCreator.NewLine;
         }
     }
+
 
     private static string[] SplitIntoLines(string text) =>
         text.Split(MarkdownConstants.Symbols.Newline, MarkdownConstants.Symbols.CarriageReturn);
@@ -40,7 +44,7 @@ public class TextTokenizer : ITokenizer
         }
     }
 
-    private static IToken? CreateTokenAndMoveIndex(string line, TokenType tokenType, ref int i)
+    private static IToken CreateTokenAndMoveIndex(string line, TokenType tokenType, ref int i)
     {
         var contentBuilder = new StringBuilder();
 
@@ -56,11 +60,11 @@ public class TextTokenizer : ITokenizer
         {
             TokenType.Tag => MarkdownTokenCreator.CreateTag(contentBuilder.ToString(), TagType.None),
             TokenType.Text => MarkdownTokenCreator.CreateTextToken(contentBuilder.ToString()),
-            _ => null
+            _ => throw new ArgumentOutOfRangeException(nameof(tokenType), tokenType, null)
         };
     }
 
     private static bool IsTokenEnded(TokenType type, char currChar) =>
-        (type is TokenType.Text && currChar == '_') ||
-        (type is TokenType.Tag && currChar != '_');
+        (type is TokenType.Text && (currChar == '_' || MarkdownTokenCreator.TryCreateSymbolToken(currChar.ToString(), out _))) ||
+        (type is TokenType.Tag && currChar != '_'); //TODO: currChar заменить строкой, её проверку заменить TryParse
 }
