@@ -14,6 +14,9 @@ public class HtmlTagConverter
 
     public string Convert(IToken token)
     {
+        if (token.TagType is TagType.None)
+            return token.Content;
+        
         foreach (var htmlTag in _htmlTags)
         {
             var isConvertedToHtml = htmlTag.TryConvert(token, out var resultHtmlTag);

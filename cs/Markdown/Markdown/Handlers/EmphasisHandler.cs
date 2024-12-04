@@ -10,60 +10,49 @@ public class EmphasisHandler : ITokenHandler
 
     public List<IToken> Handle(IList<IToken> tokens)
     {
-        var stack = new Stack<IToken>();
-        var handledTokens = new List<IToken>();
-        var bufferTokens = new List<IToken>();
+        var tagStack = new Stack<IToken>();
+        var handledStack = new Stack<IToken>();
         foreach (var token in tokens)
         {
-            if (stack.Count > 0 && stack.Peek().Equals(token))
+            if (tagStack.Count > 0 && tagStack.Peek().Equals(token))
             {
                 var tagType = token.Content == "_" ? TagType.Italic : TagType.Strong;
-                var openTag = MarkdownTokenCreator.CreateOpenTag(stack.Pop(), tagType);
-                var closeTag = MarkdownTokenCreator.CreateCloseTag(token, tagType);
+                var firstTag = tagStack.Pop();
+                var bufferStack = new Stack<IToken>();
+                var isHasText = false;
 
-
-                if (stack.Count > 0)
+                while (handledStack.Peek() != firstTag)
                 {
-                    var currBuff = new List<IToken>(bufferTokens);
-                    bufferTokens =
-                    [
-                        openTag
-                    ];
-                    bufferTokens.AddRange(currBuff);
-                    bufferTokens.Add(closeTag);
+                    var lastHandled = handledStack.Pop();
+                    if (lastHandled.Type is TokenType.Text)
+                        isHasText = true;
+                    bufferStack.Push(lastHandled);
                 }
-                else
-                {
-                    handledTokens.Add(openTag);
-                    handledTokens.AddRange(bufferTokens);
-                    handledTokens.Add(closeTag);
-                }
+                handledStack.Pop();
 
+                var openTag = isHasText ? MarkdownTokenCreator.CreateOpenTag(firstTag, tagType) : firstTag;
+                var closeTag = isHasText ? MarkdownTokenCreator.CreateCloseTag(firstTag, tagType) : firstTag;
+                handledStack.Push(openTag);
+                while (bufferStack.Count > 0)
+                    handledStack.Push(bufferStack.Pop());
+                handledStack.Push(closeTag);
                 
                 continue;
             }
 
             if (token.Equals(UnderscoreToken))
             {
-                stack.Push(UnderscoreToken);
-                handledTokens.AddRange(bufferTokens);
-                bufferTokens = [];
-                continue;
+                tagStack.Push(token);
             }
 
             if (token.Equals(DoubleUnderscoreToken))
             {
-                stack.Push(DoubleUnderscoreToken);
-                handledTokens.AddRange(bufferTokens);
-                bufferTokens = [];
-                continue;
+                tagStack.Push(token);
             }
 
-            bufferTokens.Add(token);
+            handledStack.Push(token);
         }
 
-        if (bufferTokens.Count > 0)
-            handledTokens.AddRange(bufferTokens);
-        return handledTokens;
+        return handledStack.Reverse().ToList();
     }
 }
