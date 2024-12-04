@@ -15,7 +15,6 @@ public class Md
 
     public string Render(string text)
     {
-        var handledTokens = new List<IToken>();
         var tokens = _textTokenizer.Tokenize(text).ToList();
         foreach (var handler in _handlers)
             tokens = handler.Handle(tokens);

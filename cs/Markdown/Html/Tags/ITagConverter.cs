@@ -2,7 +2,7 @@
 
 namespace Markdown.Html.Tags;
 
-public interface IHtmlTag
+public interface ITagConverter
 {
     bool TryConvert(IToken token, out string resultContent);
 }

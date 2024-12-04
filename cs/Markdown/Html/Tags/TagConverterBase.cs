@@ -2,7 +2,7 @@
 
 namespace Markdown.Html.Tags;
 
-public class HtmlTagBase(TagType tagType) : IHtmlTag
+public class TagConverterBase(TagType tagType) : ITagConverter
 {
     private TagType HtmlTagType { get; } = tagType;
 

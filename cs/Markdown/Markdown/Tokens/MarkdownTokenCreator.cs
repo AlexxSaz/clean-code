@@ -1,9 +1,16 @@
 ﻿using Markdown.Html.Tags;
+using Markdown.Markdown.Tags;
 
 namespace Markdown.Markdown.Tokens;
 
 internal static class MarkdownTokenCreator
 {
+    public static IToken NewLine =>
+        new MarkdownToken("\n", TokenType.NewLine);
+
+    public static IToken CreateOpenTag(IToken token, TagType tagType) =>
+        new MarkdownToken(token.Content, TokenType.Tag, tagType);
+
     public static IToken CreateCloseTag(IToken token, TagType tagType) =>
         new MarkdownToken(token.Content, token.Type, tagType, IsCloseTag: true);
 
@@ -28,9 +35,13 @@ internal static class MarkdownTokenCreator
         return token != null;
     }
 
-    public static IToken NewLine =>
-        new MarkdownToken("\n", TokenType.NewLine);
+    public static bool TryCreateTagToken(string content, out IToken? token)
+    {
+        token = null;
+        if (!MarkdownTagValidator.Validate(content))
+            return false;
 
-    public static IToken CreateTag(string content, TagType tagType) =>
-        new MarkdownToken(content, TokenType.Tag, tagType);
+        token = new MarkdownToken(content, TokenType.Tag);    
+        return true;
+    }
 }

@@ -1,5 +1,6 @@
 using System.Text;
 using Markdown.Html.Tags;
+using Markdown.Markdown.Tags;
 using Markdown.Markdown.Tokens;
 
 namespace Markdown.Markdown;
@@ -22,7 +23,6 @@ public class TextTokenizer : ITokenizer
         }
     }
 
-
     private static string[] SplitIntoLines(string text) =>
         text.Split(MarkdownConstants.Symbols.Newline, MarkdownConstants.Symbols.CarriageReturn);
 
@@ -36,35 +36,41 @@ public class TextTokenizer : ITokenizer
                 yield return symbolToken;
             else
             {
-                var type = currentSymbol.StartsWith(MarkdownConstants.TagSymbols.SingleUnderscore)
+                var type = MarkdownTagValidator.IsTagStart(currentSymbol)
                     ? TokenType.Tag
                     : TokenType.Text;
-                yield return CreateTokenAndMoveIndex(line, type, ref i);
+                yield return CreateToken(line, type, ref i);
             }
         }
     }
 
-    private static IToken CreateTokenAndMoveIndex(string line, TokenType tokenType, ref int i)
+    private static IToken CreateToken(string line, TokenType tokenType, ref int i)
     {
         var contentBuilder = new StringBuilder();
 
-        while (i < line.Length && !IsTokenEnded(tokenType, line[i]))
+        while (i < line.Length)
         {
+            var currentSymbol = line.Substring(i, 1);
+
+            if (currentSymbol != "#" && IsTokenEnded(contentBuilder.ToString(), currentSymbol, tokenType))
+                break;
+
             contentBuilder.Append(line[i]);
             i++;
         }
 
         i--;
+        var content = contentBuilder.ToString();
 
-        return tokenType switch
-        {
-            TokenType.Tag => MarkdownTokenCreator.CreateTag(contentBuilder.ToString(), TagType.None),
-            TokenType.Text => MarkdownTokenCreator.CreateTextToken(contentBuilder.ToString()),
-            _ => throw new ArgumentOutOfRangeException(nameof(tokenType), tokenType, null)
-        };
+        if (MarkdownTokenCreator.TryCreateTagToken(content, out var tagToken))
+            return tagToken;
+
+        return MarkdownTokenCreator.CreateTextToken(content);
     }
 
-    private static bool IsTokenEnded(TokenType type, char currChar) =>
-        (type is TokenType.Text && (currChar == '_' || MarkdownTokenCreator.TryCreateSymbolToken(currChar.ToString(), out _))) ||
-        (type is TokenType.Tag && currChar != '_'); //TODO: currChar заменить строкой, её проверку заменить TryParse
+    private static bool IsTokenEnded(string content, string symbol, TokenType tokenType) =>
+        (tokenType == TokenType.Text && (MarkdownTagValidator.IsTagStart(symbol) ||
+                                         MarkdownTokenCreator.TryCreateSymbolToken(symbol, out _))) ||
+        (tokenType == TokenType.Tag &&
+         !MarkdownTokenCreator.TryCreateTagToken(content + symbol, out _));
 }

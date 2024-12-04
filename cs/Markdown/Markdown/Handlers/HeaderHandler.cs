@@ -15,15 +15,11 @@ internal class HeaderHandler : ITokenHandler
             var currentToken = tokens[i];
 
             if ((previousToken == null || previousToken.Type is TokenType.NewLine) &&
-                currentToken.Type is TokenType.Tag && currentToken.TagType is TagType.Header)
+                currentToken.Type is TokenType.Tag && currentToken.TagType is TagType.None)
             {
-                var openHeaderTag = MarkdownTokenCreator.CreateTag("#", TagType.Header);
+                var openHeaderTag = MarkdownTokenCreator.CreateOpenTag(currentToken, TagType.Header);
                 handledTokens.Add(openHeaderTag);
-                i++;
-                currentToken = tokens[i];
-                if (currentToken.Type is TokenType.Space)
-                    i++;
-                
+                i++;                
                 while (i < tokens.Count && currentToken.Type is not TokenType.NewLine)
                 {
                     currentToken = tokens[i];

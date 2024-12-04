@@ -5,8 +5,8 @@ namespace Markdown.Markdown.Handlers;
 
 public class EmphasisHandler : ITokenHandler
 {
-    private static readonly IToken? UnderscoreToken = new MarkdownToken("_", TokenType.Tag);
-    private static readonly IToken? DoubleUnderscoreToken = new MarkdownToken("__", TokenType.Tag);
+    private static readonly IToken UnderscoreToken = new MarkdownToken("_", TokenType.Tag);
+    private static readonly IToken DoubleUnderscoreToken = new MarkdownToken("__", TokenType.Tag);
 
     public List<IToken> Handle(IList<IToken> tokens)
     {
@@ -18,14 +18,28 @@ public class EmphasisHandler : ITokenHandler
             if (stack.Count > 0 && stack.Peek().Equals(token))
             {
                 var tagType = token.Content == "_" ? TagType.Italic : TagType.Strong;
-                var openTag = MarkdownTokenCreator.CreateTag(stack.Pop().Content, tagType);
+                var openTag = MarkdownTokenCreator.CreateOpenTag(stack.Pop(), tagType);
                 var closeTag = MarkdownTokenCreator.CreateCloseTag(token, tagType);
 
-                handledTokens.Add(openTag);
-                handledTokens.AddRange(bufferTokens);
-                handledTokens.Add(closeTag);
 
-                bufferTokens = [];
+                if (stack.Count > 0)
+                {
+                    var currBuff = new List<IToken>(bufferTokens);
+                    bufferTokens =
+                    [
+                        openTag
+                    ];
+                    bufferTokens.AddRange(currBuff);
+                    bufferTokens.Add(closeTag);
+                }
+                else
+                {
+                    handledTokens.Add(openTag);
+                    handledTokens.AddRange(bufferTokens);
+                    handledTokens.Add(closeTag);
+                }
+
+                
                 continue;
             }
 

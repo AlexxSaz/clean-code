@@ -5,11 +5,11 @@ namespace Markdown.Html;
 
 public class HtmlTagConverter
 {
-    private readonly IHtmlTag[] _htmlTags =
+    private readonly ITagConverter[] _htmlTags =
     [
-        new HeaderTag(),
-        new StrongTag(),
-        new ItalicTag()
+        new HeaderTagConverter(),
+        new StrongTagConverter(),
+        new ItalicTagConverter()
     ];
 
     public string Convert(IToken token)
