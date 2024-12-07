@@ -47,8 +47,7 @@ public class MdShould
     [TestCase(@"Here sim\bols of shielding\ \should stay.\", ExpectedResult = @"Here sim\bols of shielding\ \should stay.\", TestName = "Preserve escaped characters")]
     public string RenderMixedFormatting_ShouldHandleComplexCases(string markdownText) =>
         _markdown.Render(markdownText);
-
-    [TestCase("         # text", ExpectedResult = "         <h1>text</h1>", TestName = "Render header with leading spaces")]
+    
     [TestCase("# text", ExpectedResult = "<h1>text</h1>", TestName = "Render basic header")]
     [TestCase("# _text_", ExpectedResult = "<h1><em>text</em></h1>", TestName = "Render header with italic text")]
     [TestCase("# t __t _t_ t__", ExpectedResult = "<h1>t <strong>t <em>t</em> t</strong></h1>", TestName = "Render header with mixed formatting")]

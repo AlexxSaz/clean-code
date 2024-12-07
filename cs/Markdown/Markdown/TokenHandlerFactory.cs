@@ -1,4 +1,5 @@
 ﻿using Markdown.Markdown.Handlers;
+using Markdown.Markdown.Handlers.Emphasis;
 
 namespace Markdown.Markdown;
 
