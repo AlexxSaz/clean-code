@@ -1,4 +1,4 @@
-﻿using Markdown.Html.Tags;
+using Markdown.Html.Tags;
 using Markdown.Markdown.Tokens;
 
 namespace Markdown.Markdown.Handlers;
@@ -10,63 +10,89 @@ public class EmphasisHandler : ITokenHandler
 
     public List<IToken> Handle(IList<IToken> tokens)
     {
+        if (tokens.Count < 1)
+            return tokens.ToList();
+
         var tagStack = new Stack<IToken>();
         var handledStack = new Stack<IToken>();
+        
         IToken? previousToken = null;
-        foreach (var token in tokens)
+        var token = tokens[0];        
+        for (var i = 1; i < tokens.Count; i++)
         {
-            if (tagStack.Count > 0 && tagStack.Peek().Equals(token))
+            var nextToken = tokens[i];
+            
+            if (IsEmphasisToken(token))
             {
-                if (previousToken?.Type is TokenType.Space)
+                if (ShouldSkipEmphasis(previousToken, nextToken))
                 {
-                    var newTextToken = MarkdownTokenCreator.CreateTextToken(token.Content);
-                    handledStack.Push(newTextToken);
-                    previousToken = newTextToken;
-                    continue;
+                    handledStack.Push(MarkdownTokenCreator.CreateTextToken(token.Content));
                 }
-
-                var tagType = token.Content == "_" ? TagType.Italic : TagType.Strong;
-                var firstTag = tagStack.Pop();
-                var bufferStack = new Stack<IToken>();
-                var isHasText = false;
-
-                while (handledStack.Peek() != firstTag)
+                else if (tagStack.Count > 0 && tagStack.Peek().Equals(token))
                 {
-                    var lastHandled = handledStack.Pop();
-                    if (lastHandled.Type is TokenType.Text)
-                        isHasText = true;
-                    bufferStack.Push(lastHandled);
+                    HandleClosingEmphasis(token, tagStack, handledStack);
                 }
-
-                handledStack.Pop();
-
-                var openTag = isHasText ? MarkdownTokenCreator.CreateOpenTag(firstTag, tagType) : firstTag;
-                var closeTag = isHasText ? MarkdownTokenCreator.CreateCloseTag(firstTag, tagType) : firstTag;
-                handledStack.Push(openTag);
-                while (bufferStack.Count > 0)
-                    handledStack.Push(bufferStack.Pop());
-                handledStack.Push(closeTag);
-                previousToken = closeTag;
-                continue;
+                else
+                {
+                    tagStack.Push(token);
+                    handledStack.Push(token);
+                }
             }
-
-            if (previousToken != null &&
-                (previousToken.Equals(UnderscoreToken) ||
-                 previousToken.Equals(DoubleUnderscoreToken)) &&
-                token.Type is not TokenType.Space)
-                tagStack.Push(previousToken);
-            else if (previousToken != null &&
-                     (previousToken.Equals(UnderscoreToken) ||
-                      previousToken.Equals(DoubleUnderscoreToken)))
+            else
             {
-                handledStack.Pop();
-                handledStack.Push(MarkdownTokenCreator.CreateTextToken(previousToken.Content));
+                handledStack.Push(token);
             }
-
-            handledStack.Push(token);
+            
             previousToken = token;
+            token = nextToken;
+        }
+        handledStack.Push(tokens.Last());
+        
+        return handledStack.Reverse().ToList();
+    }
+
+    private bool IsEmphasisToken(IToken token)
+    {
+        return token.Equals(UnderscoreToken) || token.Equals(DoubleUnderscoreToken);
+    }
+
+    private bool ShouldSkipEmphasis(IToken? previousToken, IToken nextToken)
+    {
+        return nextToken.Type is TokenType.Space || previousToken?.Type is TokenType.Space;
+    }
+
+    private void HandleClosingEmphasis(IToken token, Stack<IToken> tagStack, Stack<IToken> handledStack)
+    {
+        var firstTag = tagStack.Pop();
+        var bufferStack = new Stack<IToken>();
+        var isHasText = false;
+
+        while (handledStack.Count > 0 && handledStack.Peek() != firstTag)
+        {
+            var lastHandled = handledStack.Pop();
+            if (lastHandled.Type is TokenType.Text)
+                isHasText = true;
+            bufferStack.Push(lastHandled);
         }
 
-        return handledStack.Reverse().ToList();
+        if (handledStack.Count > 0)
+        {
+            handledStack.Pop(); // Remove opening tag
+            var tagType = token.Content == "_" ? TagType.Italic : TagType.Strong;
+            var openTag = isHasText ? MarkdownTokenCreator.CreateOpenTag(firstTag, tagType) : firstTag;
+            var closeTag = isHasText ? MarkdownTokenCreator.CreateCloseTag(firstTag, tagType) : firstTag;
+
+            handledStack.Push(openTag);
+            while (bufferStack.Count > 0)
+                handledStack.Push(bufferStack.Pop());
+            handledStack.Push(closeTag);
+        }
+        else
+        {
+            // Invalid tag structure - restore the buffer and add token as text
+            while (bufferStack.Count > 0)
+                handledStack.Push(bufferStack.Pop());
+            handledStack.Push(MarkdownTokenCreator.CreateTextToken(token.Content));
+        }
     }
 }
