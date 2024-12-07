@@ -12,10 +12,19 @@ public class EmphasisHandler : ITokenHandler
     {
         var tagStack = new Stack<IToken>();
         var handledStack = new Stack<IToken>();
+        IToken? previousToken = null;
         foreach (var token in tokens)
         {
             if (tagStack.Count > 0 && tagStack.Peek().Equals(token))
             {
+                if (previousToken?.Type is TokenType.Space)
+                {
+                    var newTextToken = MarkdownTokenCreator.CreateTextToken(token.Content);
+                    handledStack.Push(newTextToken);
+                    previousToken = newTextToken;
+                    continue;
+                }
+
                 var tagType = token.Content == "_" ? TagType.Italic : TagType.Strong;
                 var firstTag = tagStack.Pop();
                 var bufferStack = new Stack<IToken>();
@@ -28,6 +37,7 @@ public class EmphasisHandler : ITokenHandler
                         isHasText = true;
                     bufferStack.Push(lastHandled);
                 }
+
                 handledStack.Pop();
 
                 var openTag = isHasText ? MarkdownTokenCreator.CreateOpenTag(firstTag, tagType) : firstTag;
@@ -36,21 +46,25 @@ public class EmphasisHandler : ITokenHandler
                 while (bufferStack.Count > 0)
                     handledStack.Push(bufferStack.Pop());
                 handledStack.Push(closeTag);
-                
+                previousToken = closeTag;
                 continue;
             }
 
-            if (token.Equals(UnderscoreToken))
+            if (previousToken != null &&
+                (previousToken.Equals(UnderscoreToken) ||
+                 previousToken.Equals(DoubleUnderscoreToken)) &&
+                token.Type is not TokenType.Space)
+                tagStack.Push(previousToken);
+            else if (previousToken != null &&
+                     (previousToken.Equals(UnderscoreToken) ||
+                      previousToken.Equals(DoubleUnderscoreToken)))
             {
-                tagStack.Push(token);
-            }
-
-            if (token.Equals(DoubleUnderscoreToken))
-            {
-                tagStack.Push(token);
+                handledStack.Pop();
+                handledStack.Push(MarkdownTokenCreator.CreateTextToken(previousToken.Content));
             }
 
             handledStack.Push(token);
+            previousToken = token;
         }
 
         return handledStack.Reverse().ToList();
