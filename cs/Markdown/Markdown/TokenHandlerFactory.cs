@@ -5,7 +5,7 @@ namespace Markdown.Markdown;
 
 public static class TokenHandlerFactory
 {
-    private static readonly ITokenHandler[] _handlers =
+    private static readonly ITokenHandler[] Handlers =
     [
         new TagTypeHandler(),
         new EscapeSequenceHandler(),
@@ -13,5 +13,5 @@ public static class TokenHandlerFactory
         new HeaderHandler()
     ];
 
-    public static IEnumerable<ITokenHandler> CreateHandlers() => _handlers;
+    public static IEnumerable<ITokenHandler> CreateHandlers() => Handlers;
 }

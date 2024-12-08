@@ -2,12 +2,12 @@ namespace Markdown.Markdown.Tags;
 
 public class HeaderTagValidator : ITagValidator
 {
-    private const char startTagContent = '#'; 
-    private const char endTagContent = ' '; 
+    private const char StartTagContent = '#'; 
+    private const char EndTagContent = ' '; 
 
     public bool IsValidTag(string content) =>
-        content is [startTagContent, endTagContent];
+        content is [StartTagContent, EndTagContent];
 
     public bool IsTagStart(string content) =>
-        content.StartsWith(startTagContent);
+        content.StartsWith(StartTagContent);
 }

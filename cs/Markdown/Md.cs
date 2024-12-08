@@ -13,6 +13,6 @@ public class Md
     public string Render(string text)
     {
         var tokens = _textTokenizer.Tokenize(text);
-        return _renderer.Render(tokens.ToList());
+        return _renderer.Render(tokens);
     }
 }

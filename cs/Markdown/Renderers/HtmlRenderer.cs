@@ -7,16 +7,16 @@ namespace Markdown.Renderers;
 
 public class HtmlRenderer : IRenderer
 {
-    private readonly HtmlTagConverter _tagConverter = new();
+    private readonly HtmlTagConverter tagConverter = new();
 
-    public string Render(List<IToken> tokens)
+    public string Render(IList<IToken> tokens)
     {
         var tokenBuilder = new StringBuilder();
 
         foreach (var token in tokens)
         {
             if (token?.Type is TokenType.Tag)
-                tokenBuilder.Append(_tagConverter.Convert(token));
+                tokenBuilder.Append(tagConverter.Convert(token));
             else
                 tokenBuilder.Append(token?.Content);
         }

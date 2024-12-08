@@ -3,6 +3,7 @@ using FluentAssertions;
 namespace Markdown.Tests;
 
 [TestFixture]
+[Parallelizable(ParallelScope.All)]
 public class MdShould
 {
     private readonly Md markdown = new();

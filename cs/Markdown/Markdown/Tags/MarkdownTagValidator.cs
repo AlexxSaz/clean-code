@@ -2,7 +2,7 @@ namespace Markdown.Markdown.Tags;
 
 public static class MarkdownTagValidator
 {
-    private static readonly ITagValidator[] tagValidators = 
+    private static readonly ITagValidator[] TagValidators = 
     [
         new StrongTagValidator(),
         new ItalicTagValidator(),
@@ -10,8 +10,8 @@ public static class MarkdownTagValidator
     ];
 
     public static bool Validate(string content) =>
-        tagValidators.Any(validator => validator.IsValidTag(content));
+        TagValidators.Any(validator => validator.IsValidTag(content));
 
     public static bool IsTagStart(string content) =>
-        tagValidators.Any(validator => validator.IsTagStart(content));
+        TagValidators.Any(validator => validator.IsTagStart(content));
 }

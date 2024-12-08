@@ -10,26 +10,24 @@ public class TextTokenizer : ITokenizer
 {
     private readonly IEnumerable<ITokenHandler> handlers =
         TokenHandlerFactory.CreateHandlers();
-    
-    public IEnumerable<IToken> Tokenize(string text)
+
+    public IList<IToken> Tokenize(string text)
     {
         var lines = SplitIntoLines(text);
+        var tokens = new List<IToken>();
         for (var i = 0; i < lines.Length; i++)
         {
             var line = lines[i];
-            var tokenLine = TokenizeLine(line);
+            var tokenLine = TokenizeLine(line).ToList();
 
-            foreach (var handler in handlers)
-                tokenLine = handler.Handle(tokenLine.ToArray());
-
-            foreach (var token in tokenLine)
-            {
-                yield return token;
-            }
+            tokenLine = handlers.Aggregate(tokenLine, (current, handler) => (List<IToken>)handler.Handle(current));
 
             if (i < lines.Length - 1)
-                yield return MarkdownTokenCreator.NewLine;
+                tokenLine.Add(MarkdownTokenCreator.NewLine);
+            tokens.AddRange(tokenLine);
         }
+
+        return tokens;
     }
 
     private static string[] SplitIntoLines(string text) =>
