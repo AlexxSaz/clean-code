@@ -18,24 +18,22 @@ public class IntersectEmphasisHandler : EmphasisHandlerBase
                 continue;
             }
 
-            if (IsEmphasisTag(token))
+            if (!IsEmphasisTag(token)) continue;
+            if (token.IsCloseTag)
             {
-                if (token.IsCloseTag)
+                while (tagStack.Count > 0)
                 {
-                    while (tagStack.Count > 0)
-                    {
-                        var idx = indexTagStack.Pop();
-                        var tag = tagStack.Pop();
-                        tokens[idx] = MarkdownTokenCreator.CreateTextToken(tag.Content);
-                    }
+                    var idx = indexTagStack.Pop();
+                    var tag = tagStack.Pop();
+                    tokens[idx] = MarkdownTokenCreator.CreateTextToken(tag.Content);
+                }
 
-                    tokens[i] = MarkdownTokenCreator.CreateTextToken(token.Content);
-                }
-                else
-                {
-                    indexTagStack.Push(i);
-                    tagStack.Push(token);
-                }
+                tokens[i] = MarkdownTokenCreator.CreateTextToken(token.Content);
+            }
+            else
+            {
+                indexTagStack.Push(i);
+                tagStack.Push(token);
             }
         }
 

@@ -1,5 +1,4 @@
 using System.Text;
-using Markdown.Html.Tags;
 using Markdown.Markdown.Handlers;
 using Markdown.Markdown.Tags;
 using Markdown.Markdown.Tokens;
@@ -54,12 +53,14 @@ public class TextTokenizer : ITokenizer
     private static IToken CreateToken(string line, TokenType tokenType, ref int i)
     {
         var contentBuilder = new StringBuilder();
+        var headTagValidator = new HeaderTagValidator();
 
         while (i < line.Length)
         {
             var currentSymbol = line.Substring(i, 1);
 
-            if (currentSymbol != "#" && IsTokenEnded(contentBuilder.ToString(), currentSymbol, tokenType))
+            if (!headTagValidator.IsTagStart(currentSymbol) &&
+                IsTokenEnded(contentBuilder.ToString(), currentSymbol, tokenType))
                 break;
 
             contentBuilder.Append(line[i]);
@@ -69,10 +70,9 @@ public class TextTokenizer : ITokenizer
         i--;
         var content = contentBuilder.ToString();
 
-        if (MarkdownTokenCreator.TryCreateTagToken(content, out var tagToken))
-            return tagToken;
-
-        return MarkdownTokenCreator.CreateTextToken(content);
+        return MarkdownTokenCreator.TryCreateTagToken(content, out var tagToken)
+            ? tagToken
+            : MarkdownTokenCreator.CreateTextToken(content);
     }
 
     private static bool IsTokenEnded(string content, string symbol, TokenType tokenType) =>

@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using Markdown.Html;
-using Markdown.Markdown;
 using Markdown.Markdown.Tokens;
 
 namespace Markdown.Renderers;
@@ -15,10 +14,7 @@ public class HtmlRenderer : IRenderer
 
         foreach (var token in tokens)
         {
-            if (token?.Type is TokenType.Tag)
-                tokenBuilder.Append(tagConverter.Convert(token));
-            else
-                tokenBuilder.Append(token?.Content);
+            tokenBuilder.Append(token.Type is TokenType.Tag ? tagConverter.Convert(token) : token.Content);
         }
 
         return tokenBuilder.ToString();

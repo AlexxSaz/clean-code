@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using Markdown.Markdown.Tokens;
+﻿using Markdown.Markdown.Tokens;
 
 namespace Markdown.Markdown.Handlers;
 

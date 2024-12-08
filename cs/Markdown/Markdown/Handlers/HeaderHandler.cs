@@ -24,17 +24,8 @@ internal class HeaderHandler : ITokenHandler
                     currentToken = tokens[++i];
                 }
 
-                if (currentToken.Type is TokenType.NewLine)
-                {
-                    handledTokens.Add(MarkdownTokenCreator.CreateCloseTag(openHeaderTag, openHeaderTag.TagType));
-                    handledTokens.Add(currentToken);
-                }
-                else
-                {
-                    handledTokens.Add(currentToken);
-                    handledTokens.Add(MarkdownTokenCreator.CreateCloseTag(openHeaderTag, openHeaderTag.TagType));
-                }                    
-                
+                handledTokens.Add(currentToken);
+                handledTokens.Add(MarkdownTokenCreator.CreateCloseTag(openHeaderTag, openHeaderTag.TagType));
             }
             else handledTokens.Add(currentToken);
 

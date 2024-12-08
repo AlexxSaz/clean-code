@@ -6,55 +6,50 @@ public class DifferentWordsEmphasisHandler : EmphasisHandlerBase
 {
     public override IList<IToken> Handle(IList<IToken> tokens)
     {
-        if (tokens.Count < 1)
-            return tokens;
+        if (tokens.Count < 1) return tokens;
 
-        var openTagIndex = -1;
+        var openTagIndices = new Stack<int>();
 
-        IToken? previousToken = null;
-        var token = tokens[0];
-        for (var i = 1; i < tokens.Count; i++)
+        for (var i = 0; i < tokens.Count; i++)
         {
-            var nextToken = tokens[i];
+            var token = tokens[i];
 
-            if (IsEmphasisTag(token) && token.IsCloseTag)
+            if (!IsEmphasisTag(token)) continue;
+            if (token.IsCloseTag)
             {
-                var isOpenTagInsideText = openTagIndex > 0 && openTagIndex < tokens.Count - 1 &&
-                                          tokens[openTagIndex - 1].Type is TokenType.Text &&
-                                          tokens[openTagIndex + 1].Type is TokenType.Text;
-                var isCloseTagInsideText = previousToken is { Type: TokenType.Text } &&
-                                           nextToken.Type is TokenType.Text;
-                var isDifferentWord = false;
-                var j = i - 1;
-                while ((j > -1 && j != openTagIndex) || isDifferentWord)
-                {
-                    if (tokens[j].Type is TokenType.Space)
-                    {
-                        isDifferentWord = true;
-                        break;
-                    }
+                if (openTagIndices.Count <= 0) continue;
+                var openTagIndex = openTagIndices.Pop();
 
-                    j--;
-                }
+                var surroundedByTextAndSpace = IsSurroundedByTextAndSpace(tokens, openTagIndex, i);
 
-                if (isDifferentWord && isCloseTagInsideText && isOpenTagInsideText)
-                {
-                    tokens[openTagIndex] = MarkdownTokenCreator.CreateTextToken(tokens[openTagIndex].Content);
-                    tokens[i - 1] = MarkdownTokenCreator.CreateTextToken(tokens[i - 1].Content);
-                    openTagIndex = -1;
-                }
+                if (!surroundedByTextAndSpace) continue;
+                tokens[openTagIndex] = MarkdownTokenCreator.CreateTextToken(tokens[openTagIndex].Content);
+                tokens[i] = MarkdownTokenCreator.CreateTextToken(tokens[i].Content);
             }
-
-
-            if (IsEmphasisTag(token) && !token.IsCloseTag)
+            else
             {
-                openTagIndex = i - 1;
+                openTagIndices.Push(i);
             }
-
-            previousToken = token;
-            token = nextToken;
         }
 
         return tokens;
+    }
+
+    private static bool IsSurroundedByTextAndSpace(IList<IToken> tokens, int openTagIndex, int closeTagIndex)
+    {
+        if (openTagIndex <= 0 || closeTagIndex >= tokens.Count - 1 || openTagIndex >= closeTagIndex) return false;
+
+        return tokens[openTagIndex - 1].Type == TokenType.Text &&
+               tokens[closeTagIndex + 1].Type == TokenType.Text &&
+               HasSpaceBetween(tokens, openTagIndex, closeTagIndex);
+    }
+
+    private static bool HasSpaceBetween(IList<IToken> tokens, int startIndex, int endIndex)
+    {
+        for (var i = startIndex + 1; i < endIndex; i++)
+            if (tokens[i].Type == TokenType.Space)
+                return true;
+
+        return false;
     }
 }

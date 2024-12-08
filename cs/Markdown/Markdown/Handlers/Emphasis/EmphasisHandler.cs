@@ -1,4 +1,3 @@
-using Markdown.Html.Tags;
 using Markdown.Markdown.Tokens;
 
 namespace Markdown.Markdown.Handlers.Emphasis;

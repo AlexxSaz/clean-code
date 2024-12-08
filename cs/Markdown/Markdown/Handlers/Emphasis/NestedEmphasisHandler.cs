@@ -18,18 +18,12 @@ public class NestedEmphasisHandler : EmphasisHandlerBase
                 continue;
             }
 
-            if (IsEmphasisTag(token))
-            {
-                if (tagStack.Count > 0 && tagStack.Peek().TagType is TagType.Italic &&
-                     token.TagType is TagType.Strong)
-                {
-                    tokens[i] = MarkdownTokenCreator.CreateTextToken(token.Content);
-                }
-                else
-                {
-                    tagStack.Push(token);
-                }
-            }
+            if (!IsEmphasisTag(token)) continue;
+            if (tagStack.Count > 0 && tagStack.Peek().TagType is TagType.Italic &&
+                token.TagType is TagType.Strong)
+                tokens[i] = MarkdownTokenCreator.CreateTextToken(token.Content);
+            else
+                tagStack.Push(token);
         }
 
         return tokens;

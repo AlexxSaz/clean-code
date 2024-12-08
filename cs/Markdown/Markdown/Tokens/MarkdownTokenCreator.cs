@@ -17,7 +17,7 @@ internal static class MarkdownTokenCreator
     public static IToken CreateTextToken(string content) =>
         new MarkdownToken(content, TokenType.Text);
 
-    public static bool TryCreateSymbolToken(string content, out IToken? token)
+    public static bool TryCreateSymbolToken(string content, out IToken token)
     {
         if (int.TryParse(content, out _))
         {
@@ -29,15 +29,15 @@ internal static class MarkdownTokenCreator
         {
             " " => new MarkdownToken(content, TokenType.Space),
             "\\" => new MarkdownToken(content, TokenType.Escape),
-            _ => null
+            _ => CreateTextToken(content)
         };
 
-        return token != null;
+        return token.Type != TokenType.Text;
     }
 
-    public static bool TryCreateTagToken(string content, out IToken? token)
+    public static bool TryCreateTagToken(string content, out IToken token)
     {
-        token = null;
+        token = CreateTextToken(content);
         if (!MarkdownTagValidator.Validate(content))
             return false;
 
