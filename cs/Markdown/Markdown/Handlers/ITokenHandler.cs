@@ -5,5 +5,5 @@ namespace Markdown.Markdown.Handlers;
 
 public interface ITokenHandler
 {
-    List<IToken> Handle(IList<IToken> tokens);
+    IList<IToken> Handle(IList<IToken> tokens);
 }

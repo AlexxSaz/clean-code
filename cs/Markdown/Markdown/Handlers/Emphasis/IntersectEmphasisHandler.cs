@@ -4,59 +4,41 @@ namespace Markdown.Markdown.Handlers.Emphasis;
 
 public class IntersectEmphasisHandler : EmphasisHandlerBase
 {
-    public override List<IToken> Handle(IList<IToken> tokens)
+    public override IList<IToken> Handle(IList<IToken> tokens)
     {
         var tagStack = new Stack<IToken>();
-        var handledStack = new Stack<IToken>();
-        var isPossibleIntersect = false;
-        var skipNextTag = false;
-        foreach (var token in tokens)
+        var indexTagStack = new Stack<int>();
+        for (var i = 0; i < tokens.Count; i++)
         {
-            if (tagStack.Count > 0 && IsEmphasisTag(token))
-            {
-                if (!tagStack.Peek().Equals(token) && !isPossibleIntersect)
-                {
-                    isPossibleIntersect = true;
-                }
-                else if (!tagStack.Peek().Equals(token) && isPossibleIntersect)
-                {
-                    skipNextTag = true;
-                    while (tagStack.Count > 0)
-                    {
-                        var tag = tagStack.Pop();
-                        var bufferStack = new Stack<IToken>();
-                        while (handledStack.Count > 0 && !handledStack.Peek().Equals(tag))
-                        {
-                            bufferStack.Push(handledStack.Pop());
-                        }
+            var token = tokens[i];
 
-                        handledStack.Push(MarkdownTokenCreator.CreateTextToken(handledStack.Pop().Content));
-                        while (bufferStack.Count > 0)
-                        {
-                            handledStack.Push(bufferStack.Pop());
-                        }
-                    }
-                }
-                else
-                {
-                    tagStack.Pop();
-                    handledStack.Push(token);
-                    continue;
-                }
-            }
-
-            if (IsEmphasisTag(token) && !skipNextTag)
-                tagStack.Push(token);
-            else if (IsEmphasisTag(token) && skipNextTag)
+            if (tagStack.Count > 0 && token.TagPair == tagStack.Peek())
             {
-                skipNextTag = false;
-                handledStack.Push(MarkdownTokenCreator.CreateTextToken(token.Content));
+                tagStack.Pop();
                 continue;
             }
 
-            handledStack.Push(token);
+            if (IsEmphasisTag(token))
+            {
+                if (token.IsCloseTag)
+                {
+                    while (tagStack.Count > 0)
+                    {
+                        var idx = indexTagStack.Pop();
+                        var tag = tagStack.Pop();
+                        tokens[idx] = MarkdownTokenCreator.CreateTextToken(tag.Content);
+                    }
+
+                    tokens[i] = MarkdownTokenCreator.CreateTextToken(token.Content);
+                }
+                else
+                {
+                    indexTagStack.Push(i);
+                    tagStack.Push(token);
+                }
+            }
         }
 
-        return handledStack.Reverse().ToList();
+        return tokens;
     }
 }

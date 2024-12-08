@@ -5,7 +5,7 @@ namespace Markdown.Markdown.Handlers;
 
 internal class HeaderHandler : ITokenHandler
 {
-    public List<IToken> Handle(IList<IToken> tokens)
+    public IList<IToken> Handle(IList<IToken> tokens)
     {
         IToken? previousToken = null;
         var handledTokens = new List<IToken>();
@@ -15,21 +15,29 @@ internal class HeaderHandler : ITokenHandler
             var currentToken = tokens[i];
 
             if ((previousToken == null || previousToken.Type is TokenType.NewLine) &&
-                currentToken.Type is TokenType.Tag && currentToken.TagType is TagType.None)
+                currentToken.Type is TokenType.Tag && currentToken.TagType is TagType.Header)
             {
-                var openHeaderTag = MarkdownTokenCreator.CreateOpenTag(currentToken, TagType.Header);
-                handledTokens.Add(openHeaderTag);
-                i++;                
-                while (i < tokens.Count && currentToken.Type is not TokenType.NewLine)
+                var openHeaderTag = currentToken;
+                while (i < tokens.Count - 1 && currentToken.Type is not TokenType.NewLine)
                 {
-                    currentToken = tokens[i];
                     handledTokens.Add(currentToken);
-                    i++;
+                    currentToken = tokens[++i];
                 }
 
-                handledTokens.Add(MarkdownTokenCreator.CreateCloseTag(openHeaderTag, TagType.Header));
+                if (currentToken.Type is TokenType.NewLine)
+                {
+                    handledTokens.Add(MarkdownTokenCreator.CreateCloseTag(openHeaderTag, openHeaderTag.TagType));
+                    handledTokens.Add(currentToken);
+                }
+                else
+                {
+                    handledTokens.Add(currentToken);
+                    handledTokens.Add(MarkdownTokenCreator.CreateCloseTag(openHeaderTag, openHeaderTag.TagType));
+                }                    
+                
             }
             else handledTokens.Add(currentToken);
+
             previousToken = currentToken;
         }
 

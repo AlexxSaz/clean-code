@@ -7,18 +7,24 @@ public class EmphasisHandler : EmphasisHandlerBase
 {
     private readonly EmphasisHandlerBase[] emphasisHandlers =
     [
+        new PairEmphasisHandler(),
         new SkipEmphasisHandler(),
-        new IntersectEmphasisHandler()
+        new IntersectEmphasisHandler(),
+        new NestedEmphasisHandler(),
+        new NonPairEmphasisHandler(),
+        new DifferentWordsEmphasisHandler()
     ];
 
     public override List<IToken> Handle(IList<IToken> tokens)
     {
+        tokens = emphasisHandlers.Aggregate(tokens, (current, emphasisHandler) => emphasisHandler.Handle(current));
+        
         var tagStack = new Stack<IToken>();
         var handledStack = new Stack<IToken>();
 
         foreach (var token in tokens)
         {
-            if (tagStack.Count > 0 && tagStack.Peek().Equals(token))
+            if (tagStack.Count > 0 && token.TagPair == tagStack.Peek())
             {
                 HandleClosingEmphasis(token, tagStack, handledStack);
                 continue;
@@ -30,10 +36,7 @@ public class EmphasisHandler : EmphasisHandlerBase
             handledStack.Push(token);
         }
 
-        tokens = handledStack.Reverse().ToList();
-        tokens = emphasisHandlers.Aggregate(tokens, (current, emphasisHandler) => emphasisHandler.Handle(current));
-
-        return tokens.ToList();
+        return handledStack.Reverse().ToList();
     }
 
     private static void HandleClosingEmphasis(IToken token, Stack<IToken> tagStack, Stack<IToken> handledStack)
@@ -52,10 +55,9 @@ public class EmphasisHandler : EmphasisHandlerBase
 
         if (handledStack.Count > 0)
         {
-            handledStack.Pop(); // Remove opening tag
-            var tagType = token.Content == "_" ? TagType.Italic : TagType.Strong;
-            var openTag = isHasText ? MarkdownTokenCreator.CreateOpenTag(firstTag, tagType) : firstTag;
-            var closeTag = isHasText ? MarkdownTokenCreator.CreateCloseTag(firstTag, tagType) : firstTag;
+            handledStack.Pop();
+            var openTag = isHasText ? firstTag : MarkdownTokenCreator.CreateTextToken(firstTag.Content);
+            var closeTag = isHasText ? token : MarkdownTokenCreator.CreateTextToken(token.Content);
 
             handledStack.Push(openTag);
             while (bufferStack.Count > 0)
@@ -64,7 +66,6 @@ public class EmphasisHandler : EmphasisHandlerBase
         }
         else
         {
-            // Invalid tag structure - restore the buffer and add token as text
             while (bufferStack.Count > 0)
                 handledStack.Push(bufferStack.Pop());
             handledStack.Push(MarkdownTokenCreator.CreateTextToken(token.Content));

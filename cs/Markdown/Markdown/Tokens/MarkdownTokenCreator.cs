@@ -8,11 +8,11 @@ internal static class MarkdownTokenCreator
     public static IToken NewLine =>
         new MarkdownToken("\n", TokenType.NewLine);
 
-    public static IToken CreateOpenTag(IToken token, TagType tagType) =>
-        new MarkdownToken(token.Content, TokenType.Tag, tagType);
+    public static IToken CreateOpenTag(IToken token, TagType tagType, IToken? pair = null) =>
+        new MarkdownToken(token.Content, TokenType.Tag, TagType: tagType, TagPair: pair);
 
-    public static IToken CreateCloseTag(IToken token, TagType tagType) =>
-        new MarkdownToken(token.Content, token.Type, tagType, IsCloseTag: true);
+    public static IToken CreateCloseTag(IToken token, TagType tagType, IToken? pair = null) =>
+        new MarkdownToken(token.Content, token.Type, TagPair: pair, TagType: tagType, IsCloseTag: true);
 
     public static IToken CreateTextToken(string content) =>
         new MarkdownToken(content, TokenType.Text);
@@ -41,7 +41,7 @@ internal static class MarkdownTokenCreator
         if (!MarkdownTagValidator.Validate(content))
             return false;
 
-        token = new MarkdownToken(content, TokenType.Tag);    
+        token = new MarkdownToken(content, TokenType.Tag);
         return true;
     }
 }

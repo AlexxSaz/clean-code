@@ -8,4 +8,5 @@ public interface IToken
     string Content { get; }
     bool IsCloseTag { get; }
     TagType TagType { get; }
+    IToken? TagPair { get; }
 }

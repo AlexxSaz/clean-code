@@ -1,5 +1,6 @@
 using System.Text;
 using Markdown.Html.Tags;
+using Markdown.Markdown.Handlers;
 using Markdown.Markdown.Tags;
 using Markdown.Markdown.Tokens;
 
@@ -7,13 +8,21 @@ namespace Markdown.Markdown;
 
 public class TextTokenizer : ITokenizer
 {
+    private readonly IEnumerable<ITokenHandler> handlers =
+        TokenHandlerFactory.CreateHandlers();
+    
     public IEnumerable<IToken> Tokenize(string text)
     {
         var lines = SplitIntoLines(text);
         for (var i = 0; i < lines.Length; i++)
         {
             var line = lines[i];
-            foreach (var token in TokenizeLine(line))
+            var tokenLine = TokenizeLine(line);
+
+            foreach (var handler in handlers)
+                tokenLine = handler.Handle(tokenLine.ToArray());
+
+            foreach (var token in tokenLine)
             {
                 yield return token;
             }
