@@ -5,7 +5,7 @@ namespace Markdown.Markdown.Handlers;
 
 internal class HeaderHandler : ITokenHandler
 {
-    public IList<IToken> Handle(IList<IToken> tokens)
+    public IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens)
     {
         IToken? previousToken = null;
         var handledTokens = new List<IToken>();
@@ -14,7 +14,7 @@ internal class HeaderHandler : ITokenHandler
         {
             var currentToken = tokens[i];
 
-            if ((previousToken == null || previousToken.Type is TokenType.NewLine) &&
+            if (previousToken == null &&
                 currentToken.Type is TokenType.Tag && currentToken.TagType is TagType.Header)
             {
                 var openHeaderTag = currentToken;
@@ -25,7 +25,8 @@ internal class HeaderHandler : ITokenHandler
                 }
 
                 handledTokens.Add(currentToken);
-                handledTokens.Add(MarkdownTokenCreator.CreateCloseTag(openHeaderTag, openHeaderTag.TagType));
+                handledTokens.Add(
+                    MarkdownTokenCreator.CreateCloseTag(openHeaderTag, openHeaderTag.TagType, openHeaderTag));
             }
             else handledTokens.Add(currentToken);
 

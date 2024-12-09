@@ -19,7 +19,7 @@ public class TextTokenizer : ITokenizer
             var line = lines[i];
             var tokenLine = TokenizeLine(line).ToList();
 
-            tokenLine = handlers.Aggregate(tokenLine, (current, handler) => (List<IToken>)handler.Handle(current));
+            tokenLine = handlers.Aggregate(tokenLine, (current, handler) => handler.Handle(current).ToList());
 
             if (i < lines.Length - 1)
                 tokenLine.Add(MarkdownTokenCreator.NewLine);
@@ -30,7 +30,7 @@ public class TextTokenizer : ITokenizer
     }
 
     private static string[] SplitIntoLines(string text) =>
-        text.Split(MarkdownConstants.Symbols.Newline, MarkdownConstants.Symbols.CarriageReturn);
+        text.Split(MarkdownConstants.Newline);
 
     private static IEnumerable<IToken> TokenizeLine(string line)
     {
@@ -53,14 +53,12 @@ public class TextTokenizer : ITokenizer
     private static IToken CreateToken(string line, TokenType tokenType, ref int i)
     {
         var contentBuilder = new StringBuilder();
-        var headTagValidator = new HeaderTagValidator();
 
         while (i < line.Length)
         {
             var currentSymbol = line.Substring(i, 1);
 
-            if (!headTagValidator.IsTagStart(currentSymbol) &&
-                IsTokenEnded(contentBuilder.ToString(), currentSymbol, tokenType))
+            if (IsTokenEnded(contentBuilder.ToString(), currentSymbol, tokenType))
                 break;
 
             contentBuilder.Append(line[i]);
@@ -79,5 +77,6 @@ public class TextTokenizer : ITokenizer
         (tokenType == TokenType.Text && (MarkdownTagValidator.IsTagStart(symbol) ||
                                          MarkdownTokenCreator.TryCreateSymbolToken(symbol, out _))) ||
         (tokenType == TokenType.Tag &&
-         !MarkdownTokenCreator.TryCreateTagToken(content + symbol, out _));
+         !MarkdownTokenCreator.TryCreateTagToken(content + symbol, out _) &&
+         (!MarkdownTagValidator.IsTagStart(symbol) || MarkdownTagValidator.IsTagEnd(symbol)));
 }

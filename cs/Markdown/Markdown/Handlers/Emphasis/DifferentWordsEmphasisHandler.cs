@@ -4,38 +4,51 @@ namespace Markdown.Markdown.Handlers.Emphasis;
 
 public class DifferentWordsEmphasisHandler : EmphasisHandlerBase
 {
-    public override IList<IToken> Handle(IList<IToken> tokens)
+    public override IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens)
     {
         if (tokens.Count < 1) return tokens;
 
+        var handledTokens = new List<IToken>();
         var openTagIndices = new Stack<int>();
 
         for (var i = 0; i < tokens.Count; i++)
         {
             var token = tokens[i];
 
-            if (!IsEmphasisTag(token)) continue;
+            if (!IsEmphasisTag(token))
+            {
+                handledTokens.Add(token);
+                continue;
+            }
             if (token.IsCloseTag)
             {
-                if (openTagIndices.Count <= 0) continue;
+                if (openTagIndices.Count <= 0)
+                {
+                    handledTokens.Add(token);
+                    continue;
+                }
                 var openTagIndex = openTagIndices.Pop();
 
                 var surroundedByTextAndSpace = IsSurroundedByTextAndSpace(tokens, openTagIndex, i);
 
-                if (!surroundedByTextAndSpace) continue;
-                tokens[openTagIndex] = MarkdownTokenCreator.CreateTextToken(tokens[openTagIndex].Content);
-                tokens[i] = MarkdownTokenCreator.CreateTextToken(tokens[i].Content);
+                if (!surroundedByTextAndSpace)
+                {
+                    handledTokens.Add(token);
+                    continue;
+                }
+                handledTokens[openTagIndex] = MarkdownTokenCreator.CreateTextToken(tokens[openTagIndex].Content);
+                handledTokens.Add(MarkdownTokenCreator.CreateTextToken(tokens[i].Content));
+                continue;
             }
-            else
-            {
-                openTagIndices.Push(i);
-            }
+
+            openTagIndices.Push(i);
+            handledTokens.Add(token);
         }
 
-        return tokens;
+        return handledTokens;
     }
 
-    private static bool IsSurroundedByTextAndSpace(IList<IToken> tokens, int openTagIndex, int closeTagIndex)
+    private static bool IsSurroundedByTextAndSpace(IReadOnlyList<IToken> tokens, int openTagIndex, int closeTagIndex)
     {
         if (openTagIndex <= 0 || closeTagIndex >= tokens.Count - 1 || openTagIndex >= closeTagIndex) return false;
 
@@ -44,7 +57,7 @@ public class DifferentWordsEmphasisHandler : EmphasisHandlerBase
                HasSpaceBetween(tokens, openTagIndex, closeTagIndex);
     }
 
-    private static bool HasSpaceBetween(IList<IToken> tokens, int startIndex, int endIndex)
+    private static bool HasSpaceBetween(IReadOnlyList<IToken> tokens, int startIndex, int endIndex)
     {
         for (var i = startIndex + 1; i < endIndex; i++)
             if (tokens[i].Type == TokenType.Space)

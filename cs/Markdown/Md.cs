@@ -3,14 +3,11 @@ using Markdown.Renderers;
 
 namespace Markdown;
 
-public class Md
+public class Md(ITokenizer tokenizer, IRenderer renderer)
 {
-    private readonly IRenderer renderer = new HtmlRenderer();
-    private readonly ITokenizer textTokenizer = new TextTokenizer();
-
     public string Render(string text)
     {
-        var tokens = textTokenizer.Tokenize(text);
+        var tokens = tokenizer.Tokenize(text);
         return renderer.Render(tokens);
     }
 }

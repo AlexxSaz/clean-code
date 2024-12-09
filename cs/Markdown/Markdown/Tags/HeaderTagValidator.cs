@@ -10,4 +10,7 @@ public class HeaderTagValidator : ITagValidator
 
     public bool IsTagStart(string content) =>
         content.StartsWith(StartTagContent);
+
+    public bool IsTagEnd(string content) =>
+        content.EndsWith(EndTagContent);
 }

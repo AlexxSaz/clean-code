@@ -5,27 +5,36 @@ namespace Markdown.Markdown.Handlers.Emphasis;
 
 public class NestedEmphasisHandler : EmphasisHandlerBase
 {
-    public override IList<IToken> Handle(IList<IToken> tokens)
+    public override IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens)
     {
+        var handledTokens = new List<IToken>();
         var tagStack = new Stack<IToken>();
-        for (var i = 0; i < tokens.Count; i++)
+        foreach (var token in tokens)
         {
-            var token = tokens[i];
-
             if (tagStack.Count > 0 && token.TagPair == tagStack.Peek())
             {
                 tagStack.Pop();
+                handledTokens.Add(token);
                 continue;
             }
 
-            if (!IsEmphasisTag(token)) continue;
+            if (!IsEmphasisTag(token))
+            {
+                handledTokens.Add(token);
+                continue;
+            }
+
             if (tagStack.Count > 0 && tagStack.Peek().TagType is TagType.Italic &&
                 token.TagType is TagType.Strong)
-                tokens[i] = MarkdownTokenCreator.CreateTextToken(token.Content);
-            else
-                tagStack.Push(token);
+            {
+                handledTokens.Add(MarkdownTokenCreator.CreateTextToken(token.Content));
+                continue;
+            }
+
+            tagStack.Push(token);
+            handledTokens.Add(token);
         }
 
-        return tokens;
+        return handledTokens;
     }
 }

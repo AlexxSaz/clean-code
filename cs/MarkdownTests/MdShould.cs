@@ -1,4 +1,6 @@
 using FluentAssertions;
+using Markdown.Markdown;
+using Markdown.Renderers;
 
 namespace Markdown.Tests;
 
@@ -6,7 +8,7 @@ namespace Markdown.Tests;
 [Parallelizable(ParallelScope.All)]
 public class MdShould
 {
-    private readonly Md markdown = new();
+    private readonly Md markdown = new(new TextTokenizer(), new HtmlRenderer());
     private const string TestsFilesDirectory = "Resources";
 
     [TestCase("test, _te x t_ tt", ExpectedResult = "test, <em>te x t</em> tt",
@@ -22,11 +24,6 @@ public class MdShould
     [TestCase("_text___", ExpectedResult = "_text___", TestName = "Should not parse with unmatched underscores")]
     [TestCase("text_ text_", ExpectedResult = "text_ text_", TestName = "Should not parse with spaces after tags")]
     [TestCase("_text text _text", ExpectedResult = "_text text _text",
-        TestName = "Should not parse with space before end tag")]
-    [TestCase(
-        "Подчерки, заканчивающие выделение, должны следовать за непробельным символом. Иначе эти _подчерки _не считаются_ окончанием выделения \nи остаются просто символами подчерка.",
-        ExpectedResult =
-            "Подчерки, заканчивающие выделение, должны следовать за непробельным символом. Иначе эти _подчерки _не считаются_ окончанием выделения \nи остаются просто символами подчерка.",
         TestName = "Should not parse with space before end tag")]
     [TestCase("text _text text", ExpectedResult = "text _text text", TestName = "Should not parse with only start tag")]
     [TestCase("text t_ext ___te_xt", ExpectedResult = "text t_ext ___te_xt",

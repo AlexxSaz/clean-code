@@ -6,7 +6,7 @@ namespace Markdown.Markdown.Tokens;
 internal static class MarkdownTokenCreator
 {
     public static IToken NewLine =>
-        new MarkdownToken("\n", TokenType.NewLine);
+        new MarkdownToken(MarkdownConstants.Newline, TokenType.NewLine);
 
     public static IToken CreateOpenTag(IToken token, TagType tagType, IToken? pair = null) =>
         new MarkdownToken(token.Content, TokenType.Tag, TagType: tagType, TagPair: pair);
@@ -27,8 +27,8 @@ internal static class MarkdownTokenCreator
 
         token = content switch
         {
-            " " => new MarkdownToken(content, TokenType.Space),
-            "\\" => new MarkdownToken(content, TokenType.Escape),
+            MarkdownConstants.Space => new MarkdownToken(content, TokenType.Space),
+            MarkdownConstants.Escape => new MarkdownToken(content, TokenType.Escape),
             _ => CreateTextToken(content)
         };
 

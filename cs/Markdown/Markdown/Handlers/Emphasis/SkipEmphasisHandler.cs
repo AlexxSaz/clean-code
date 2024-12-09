@@ -4,7 +4,7 @@ namespace Markdown.Markdown.Handlers.Emphasis;
 
 public class SkipEmphasisHandler : EmphasisHandlerBase
 {
-    public override IList<IToken> Handle(IList<IToken> tokens)
+    public override IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens)
     {
         if (tokens.Count < 1)
             return tokens;

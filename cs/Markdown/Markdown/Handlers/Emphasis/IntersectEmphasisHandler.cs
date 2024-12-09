@@ -4,8 +4,9 @@ namespace Markdown.Markdown.Handlers.Emphasis;
 
 public class IntersectEmphasisHandler : EmphasisHandlerBase
 {
-    public override IList<IToken> Handle(IList<IToken> tokens)
+    public override IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens)
     {
+        var handledTokens = new List<IToken>();
         var tagStack = new Stack<IToken>();
         var indexTagStack = new Stack<int>();
         for (var i = 0; i < tokens.Count; i++)
@@ -15,28 +16,34 @@ public class IntersectEmphasisHandler : EmphasisHandlerBase
             if (tagStack.Count > 0 && token.TagPair == tagStack.Peek())
             {
                 tagStack.Pop();
+                handledTokens.Add(token);
                 continue;
             }
 
-            if (!IsEmphasisTag(token)) continue;
+            if (!IsEmphasisTag(token))
+            {
+                handledTokens.Add(token);
+                continue;
+            }
+
             if (token.IsCloseTag)
             {
                 while (tagStack.Count > 0)
                 {
                     var idx = indexTagStack.Pop();
                     var tag = tagStack.Pop();
-                    tokens[idx] = MarkdownTokenCreator.CreateTextToken(tag.Content);
+                    handledTokens[idx] = MarkdownTokenCreator.CreateTextToken(tag.Content);
                 }
 
-                tokens[i] = MarkdownTokenCreator.CreateTextToken(token.Content);
+                handledTokens.Add(MarkdownTokenCreator.CreateTextToken(token.Content));
+                continue;
             }
-            else
-            {
-                indexTagStack.Push(i);
-                tagStack.Push(token);
-            }
+
+            indexTagStack.Push(i);
+            tagStack.Push(token);
+            handledTokens.Add(token);
         }
 
-        return tokens;
+        return handledTokens;
     }
 }

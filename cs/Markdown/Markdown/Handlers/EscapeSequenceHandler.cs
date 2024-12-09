@@ -4,7 +4,7 @@ namespace Markdown.Markdown.Handlers;
 
 public class EscapeSequenceHandler : ITokenHandler
 {
-    public IList<IToken> Handle(IList<IToken> tokens)
+    public IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens)
     {
         IToken? previousToken = null;
         var handledTokens = new List<IToken>();
@@ -37,7 +37,6 @@ public class EscapeSequenceHandler : ITokenHandler
                     }
 
                     previousToken = currentToken;
-
                     break;
                 }
             }

@@ -10,7 +10,10 @@ public abstract class UnderscoreTagValidatorBase(string tagMarker) : ITagValidat
         HasValidTagMarkers(content); 
  
     public bool IsTagStart(string content) => 
-        !string.IsNullOrEmpty(content) && content.StartsWith(UnderscoreChar); 
+        !string.IsNullOrEmpty(content) && content.StartsWith(UnderscoreChar);
+    
+    public bool IsTagEnd(string content) => 
+        !string.IsNullOrEmpty(content) && content.EndsWith(UnderscoreChar); 
  
     private bool HasValidLength(string content) => 
         content.Length == tagLength; 

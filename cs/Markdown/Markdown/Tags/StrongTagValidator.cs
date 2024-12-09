@@ -1,3 +1,3 @@
 namespace Markdown.Markdown.Tags;
 
-public class StrongTagValidator() : UnderscoreTagValidatorBase("__");
+public class StrongTagValidator() : UnderscoreTagValidatorBase(MarkdownConstants.DoubleUnderscore);

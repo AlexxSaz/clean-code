@@ -14,4 +14,7 @@ public static class MarkdownTagValidator
 
     public static bool IsTagStart(string content) =>
         TagValidators.Any(validator => validator.IsTagStart(content));
+    
+    public static bool IsTagEnd(string content) =>
+        TagValidators.Any(validator => validator.IsTagEnd(content));
 }

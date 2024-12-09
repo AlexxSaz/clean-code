@@ -1,3 +1,3 @@
 namespace Markdown.Markdown.Tags;
 
-public class ItalicTagValidator() : UnderscoreTagValidatorBase("_");
+public class ItalicTagValidator() : UnderscoreTagValidatorBase(MarkdownConstants.SingleUnderscore);

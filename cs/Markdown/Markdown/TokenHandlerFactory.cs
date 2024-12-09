@@ -10,7 +10,8 @@ public static class TokenHandlerFactory
         new TagTypeHandler(),
         new EscapeSequenceHandler(),
         new EmphasisHandler(),
-        new HeaderHandler()
+        new HeaderHandler(),
+        new NonPairTagHandler()
     ];
 
     public static IEnumerable<ITokenHandler> CreateHandlers() => Handlers;
