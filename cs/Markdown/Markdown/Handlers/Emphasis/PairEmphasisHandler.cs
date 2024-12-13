@@ -5,42 +5,29 @@ namespace Markdown.Markdown.Handlers.Emphasis;
 
 public class PairEmphasisHandler : EmphasisHandlerBase
 {
-    public override IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens)
+    private readonly TagType[] pairedTagTypes = [TagType.Italic, TagType.Strong];
+
+    public override IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens) =>
+        pairedTagTypes.Aggregate(tokens, HandlePairForTagType);
+
+    private static List<IToken> HandlePairForTagType(IReadOnlyList<IToken> tokens, TagType tagType)
     {
-        var lastItalicIndex = -1;
-        var lastStrongIndex = -1;
+        var lastTagIndex = -1;
         var handledTokens = new List<IToken>();
 
         for (var i = 0; i < tokens.Count; i++)
         {
             var token = tokens[i];
-
-            if (lastItalicIndex > -1 && token.TagType is TagType.Italic)
+            if (lastTagIndex > -1 && token.TagType == tagType)
             {
-                handledTokens.Add(MarkdownTokenCreator.CreateCloseTag(token, token.TagType, tokens[lastItalicIndex]));
-                lastItalicIndex = -1;
+                handledTokens.Add(MarkdownTokenCreator.CreateCloseTag(token, token.TagType, tokens[lastTagIndex]));
+                lastTagIndex = -1;
                 continue;
             }
 
-            if (lastStrongIndex > -1 && token.TagType is TagType.Strong)
-            {
-                handledTokens.Add(MarkdownTokenCreator.CreateCloseTag(token, token.TagType, tokens[lastStrongIndex]));
-                lastStrongIndex = -1;
-                continue;
-            }
+            if (token.TagType == tagType)
+                lastTagIndex = i;
 
-            if (IsEmphasisTag(token))
-            {
-                switch (token.TagType)
-                {
-                    case TagType.Italic:
-                        lastItalicIndex = i;
-                        break;
-                    case TagType.Strong:
-                        lastStrongIndex = i;
-                        break;
-                }
-            }
             handledTokens.Add(token);
         }
 
