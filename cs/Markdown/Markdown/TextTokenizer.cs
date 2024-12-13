@@ -14,14 +14,13 @@ public class TextTokenizer : ITokenizer
     {
         var lines = SplitIntoLines(text);
         var tokens = new List<IToken>();
-        for (var i = 0; i < lines.Length; i++)
+        foreach (var line in lines)
         {
-            var line = lines[i];
             var tokenLine = TokenizeLine(line).ToList();
 
             tokenLine = handlers.Aggregate(tokenLine, (current, handler) => handler.Handle(current).ToList());
 
-            if (i < lines.Length - 1)
+            if (line != lines[^1])
                 tokenLine.Add(MarkdownTokenCreator.NewLine);
             tokens.AddRange(tokenLine);
         }
@@ -74,9 +73,18 @@ public class TextTokenizer : ITokenizer
     }
 
     private static bool IsTokenEnded(string content, string symbol, TokenType tokenType) =>
-        (tokenType == TokenType.Text && (MarkdownTagValidator.IsTagStart(symbol) ||
-                                         MarkdownTokenCreator.TryCreateSymbolToken(symbol, out _))) ||
-        (tokenType == TokenType.Tag &&
-         !MarkdownTokenCreator.TryCreateTagToken(content + symbol, out _) &&
-         (!MarkdownTagValidator.IsTagStart(symbol) || MarkdownTagValidator.IsTagEnd(symbol)));
+        tokenType switch
+        {
+            TokenType.Text => IsTextTokenEnded(symbol),
+            TokenType.Tag => IsTagTokenEnded(content, symbol),
+            _ => false
+        };
+
+    private static bool IsTextTokenEnded(string symbol) =>
+        MarkdownTagValidator.IsTagStart(symbol) ||
+        MarkdownTokenCreator.TryCreateSymbolToken(symbol, out _);
+
+    private static bool IsTagTokenEnded(string content, string symbol) =>
+        !MarkdownTokenCreator.TryCreateTagToken(content + symbol, out _) &&
+        (!MarkdownTagValidator.IsTagStart(symbol) || MarkdownTagValidator.IsTagEnd(symbol));
 }

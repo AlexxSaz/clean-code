@@ -1,8 +1,9 @@
 using FluentAssertions;
+using Markdown;
 using Markdown.Markdown;
 using Markdown.Renderers;
 
-namespace Markdown.Tests;
+namespace MarkdownTests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.All)]
@@ -69,7 +70,6 @@ public class MdShould
     public string RenderHeaders_ShouldNotParseInvalidCases(string markdownText) =>
         markdown.Render(markdownText);
 
-    //[TestCase("Markdown.md", TestName = "Convert Markdown file to HTML")]
     [TestCase("MarkdownSpec.md", TestName = "Convert MarkdownSpec file to HTML")]
     public void RenderMarkdownFile_ShouldCreateHtmlFile(string markdownPath)
     {

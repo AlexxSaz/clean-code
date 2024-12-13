@@ -29,15 +29,16 @@ internal static class MarkdownTokenCreator
         {
             MarkdownConstants.Space => new MarkdownToken(content, TokenType.Space),
             MarkdownConstants.Escape => new MarkdownToken(content, TokenType.Escape),
-            _ => CreateTextToken(content)
+            _ => null!
         };
 
-        return token.Type != TokenType.Text;
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        return token is not null;
     }
 
     public static bool TryCreateTagToken(string content, out IToken token)
     {
-        token = CreateTextToken(content);
+        token = null!;
         if (!MarkdownTagValidator.Validate(content))
             return false;
 
