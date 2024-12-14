@@ -1,4 +1,5 @@
-﻿using Markdown.Markdown.Tokens;
+﻿using Markdown.Extensions;
+using Markdown.Markdown.Tokens;
 
 namespace Markdown.Markdown.Handlers.Emphasis;
 
@@ -8,44 +9,22 @@ public class DifferentWordsEmphasisHandler : EmphasisHandlerBase
     {
         if (tokens.Count < 1) return tokens;
 
-        var handledTokens = tokens;
+        var tagToTextIndices = new HashSet<int>();
 
-        for (var i = tokens.Count - 1; i > -1; i--)
+        for (var closeTagIndex = tokens.Count - 1; closeTagIndex > -1; closeTagIndex--)
         {
-            var token = tokens[i];
+            var token = tokens[closeTagIndex];
             if (!token.IsCloseTag) continue;
 
-            var openTagIndex = GetOpenTagIndex(tokens, token.TagPair!);
+            var openTagIndex = tokens.IndexOf(token.TagPair!);
             if (openTagIndex == -1) continue;
 
-            if (IsSurroundedByTextAndSpace(tokens, openTagIndex, i))
-                handledTokens = RewriteTagsToText(handledTokens, openTagIndex, i);
+            if (!IsSurroundedByTextAndSpace(tokens, openTagIndex, closeTagIndex)) continue;
+            tagToTextIndices.Add(openTagIndex);
+            tagToTextIndices.Add(closeTagIndex);
         }
 
-        return handledTokens;
-    }
-
-    private static int GetOpenTagIndex(IReadOnlyList<IToken> tokens, IToken searchToken)
-    {
-        for (var i = 0; i < tokens.Count; i++)
-            if (tokens[i] == searchToken)
-                return i;
-        return -1;
-    }
-
-    private static List<IToken> RewriteTagsToText(IReadOnlyList<IToken> tokens, int openTagIndex, int closeTagIndex)
-    {
-        var handledTokens = new List<IToken>();
-        for (var i = 0; i < tokens.Count; i++)
-        {
-            var token = tokens[i];
-            if (i == openTagIndex || i == closeTagIndex)
-                handledTokens.Add(MarkdownTokenCreator.CreateTextToken(token.Content));
-            else
-                handledTokens.Add(tokens[i]);
-        }
-
-        return handledTokens;
+        return RewriteTagsToText(tokens, tagToTextIndices);
     }
 
     private static bool IsSurroundedByTextAndSpace(IReadOnlyList<IToken> tokens, int openTagIndex, int closeTagIndex)

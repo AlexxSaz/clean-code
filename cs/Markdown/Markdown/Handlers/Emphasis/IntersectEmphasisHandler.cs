@@ -1,4 +1,5 @@
-﻿using Markdown.Markdown.Tokens;
+﻿using Markdown.Extensions;
+using Markdown.Markdown.Tokens;
 
 namespace Markdown.Markdown.Handlers.Emphasis;
 
@@ -6,44 +7,30 @@ public class IntersectEmphasisHandler : EmphasisHandlerBase
 {
     public override IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens)
     {
-        var handledTokens = new List<IToken>();
-        var tagStack = new Stack<IToken>();
-        var indexTagStack = new Stack<int>();
-        for (var i = 0; i < tokens.Count; i++)
+        var tagToTextIndices = new HashSet<int>();
+        var lastOpenTagIndex = -1;
+        var lastCloseTagIndex = -1;
+
+        for (var closeTagIndex = tokens.Count - 1; closeTagIndex > -1; closeTagIndex--)
         {
-            var token = tokens[i];
+            var token = tokens[closeTagIndex];
+            if (!token.IsCloseTag) continue;
 
-            if (tagStack.Count > 0 && token.TagPair == tagStack.Peek())
+            var openTagIndex = tokens.IndexOf(token.TagPair!);
+            if (openTagIndex == -1) continue;
+
+            if (closeTagIndex > lastOpenTagIndex && openTagIndex < lastOpenTagIndex)
             {
-                tagStack.Pop();
-                handledTokens.Add(token);
-                continue;
+                tagToTextIndices.Add(lastOpenTagIndex);
+                tagToTextIndices.Add(lastCloseTagIndex);
+                tagToTextIndices.Add(openTagIndex);
+                tagToTextIndices.Add(closeTagIndex);
             }
 
-            if (!IsEmphasisTag(token))
-            {
-                handledTokens.Add(token);
-                continue;
-            }
-
-            if (token.IsCloseTag)
-            {
-                while (tagStack.Count > 0)
-                {
-                    var idx = indexTagStack.Pop();
-                    var tag = tagStack.Pop();
-                    handledTokens[idx] = MarkdownTokenCreator.CreateTextToken(tag.Content);
-                }
-
-                handledTokens.Add(MarkdownTokenCreator.CreateTextToken(token.Content));
-                continue;
-            }
-
-            indexTagStack.Push(i);
-            tagStack.Push(token);
-            handledTokens.Add(token);
+            lastCloseTagIndex = closeTagIndex;
+            lastOpenTagIndex = openTagIndex;
         }
 
-        return handledTokens;
+        return RewriteTagsToText(tokens, tagToTextIndices);
     }
 }
