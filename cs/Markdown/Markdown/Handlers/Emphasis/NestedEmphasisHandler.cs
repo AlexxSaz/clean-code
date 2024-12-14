@@ -7,34 +7,29 @@ public class NestedEmphasisHandler : EmphasisHandlerBase
 {
     public override IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens)
     {
-        var handledTokens = new List<IToken>();
+        var tagsToTextIndices = new HashSet<int>();
         var tagStack = new Stack<IToken>();
-        foreach (var token in tokens)
+        for (var i = 0; i < tokens.Count; i++)
         {
-            if (tagStack.Count > 0 && token.TagPair == tagStack.Peek())
+            var token = tokens[i];
+            if (!IsEmphasisTag(token)) continue;
+
+            if (tagStack.Count == 0)
             {
+                tagStack.Push(token);
+                continue;
+            }
+
+            if (token.TagPair == tagStack.Peek())
                 tagStack.Pop();
-                handledTokens.Add(token);
-                continue;
-            }
-
-            if (!IsEmphasisTag(token))
-            {
-                handledTokens.Add(token);
-                continue;
-            }
-
-            if (tagStack.Count > 0 && tagStack.Peek().TagType is TagType.Italic &&
-                token.TagType is TagType.Strong)
-            {
-                handledTokens.Add(MarkdownTokenCreator.CreateTextToken(token.Content));
-                continue;
-            }
-
-            tagStack.Push(token);
-            handledTokens.Add(token);
+            else if (IsStrongInsideItalic(tagStack.Peek(), token))
+                tagsToTextIndices.Add(i);
         }
 
-        return handledTokens;
+        return RewriteTagsToText(tokens, tagsToTextIndices);
     }
+
+    private static bool IsStrongInsideItalic(IToken firstToken, IToken secondToken) =>
+        firstToken.TagType is TagType.Italic &&
+        secondToken.TagType is TagType.Strong;
 }
