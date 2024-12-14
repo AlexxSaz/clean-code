@@ -8,6 +8,7 @@ public class EmphasisHandler : EmphasisHandlerBase
     [
         new PairEmphasisHandler(),
         new SkipEmphasisHandler(),
+        new SeriesEmphasisHandler(),
         new IntersectEmphasisHandler(),
         new NestedEmphasisHandler(),
         new TextInsideEmphasisHandler(),
