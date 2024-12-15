@@ -14,6 +14,13 @@ internal class HeaderHandler : ITokenHandler
         {
             var currentToken = tokens[i];
 
+            if (previousToken != null &&
+                currentToken.Type is TokenType.Tag && currentToken.TagType is TagType.Header)
+            {
+                handledTokens.Add(MarkdownTokenCreator.CreateTextToken(currentToken.Content));
+                continue;
+            }
+            
             if (previousToken == null &&
                 currentToken.Type is TokenType.Tag && currentToken.TagType is TagType.Header)
             {
