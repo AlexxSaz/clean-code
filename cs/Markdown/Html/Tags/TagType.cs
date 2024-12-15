@@ -5,5 +5,6 @@ public enum TagType
     Header,
     Italic,
     Strong,
+    Image,
     None
 }
