@@ -1,5 +1,6 @@
 ﻿using Markdown.Markdown.Handlers;
 using Markdown.Markdown.Handlers.Emphasis;
+using Markdown.Markdown.Handlers.Image;
 
 namespace Markdown.Markdown;
 
@@ -10,8 +11,7 @@ public static class TokenHandlerFactory
         new TagTypeHandler(),
         new EscapeSequenceHandler(),
         new EmphasisHandler(),
-        new HeaderHandler(),
-        new NonPairTagHandler()
+        new HeaderHandler()
     ];
 
     public static IEnumerable<ITokenHandler> CreateHandlers() => Handlers;
