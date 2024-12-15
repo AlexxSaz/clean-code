@@ -1,8 +1,7 @@
 namespace Markdown.Markdown.Tags;
 
-public abstract class UnderscoreTagValidatorBase(string tagMarker) : ITagValidator 
-{ 
-    private const char UnderscoreChar = '_'; 
+public abstract class TagValidatorBase(string tagMarker) : ITagValidator 
+{
     private readonly int tagLength = tagMarker.Length; 
  
     public bool IsValidTag(string content) => 
@@ -10,10 +9,10 @@ public abstract class UnderscoreTagValidatorBase(string tagMarker) : ITagValidat
         HasValidTagMarkers(content); 
  
     public bool IsTagStart(string content) => 
-        !string.IsNullOrEmpty(content) && content.StartsWith(UnderscoreChar);
+        !string.IsNullOrEmpty(content) && content.StartsWith(tagMarker[0]);
     
     public bool IsTagEnd(string content) => 
-        !string.IsNullOrEmpty(content) && content.EndsWith(UnderscoreChar); 
+        !string.IsNullOrEmpty(content) && content.EndsWith(tagMarker[^1]); 
  
     private bool HasValidLength(string content) => 
         content.Length == tagLength; 
