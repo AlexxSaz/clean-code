@@ -1,4 +1,5 @@
 ﻿using Markdown.Html.Tags;
+using Markdown.Markdown.Attributes;
 using Markdown.Markdown.Tags;
 
 namespace Markdown.Markdown.Tokens;
@@ -13,6 +14,10 @@ internal static class MarkdownTokenCreator
 
     public static IToken CreateCloseTag(IToken token, TagType tagType, IToken? pair = null) =>
         new MarkdownToken(token.Content, token.Type, TagPair: pair, TagType: tagType, IsCloseTag: true);
+
+    public static IToken CreateTagWithAttributes(IToken token, HashSet<IAttribute> attributes) =>
+        new MarkdownToken(token.Content, token.Type, token.TagType, token.TagPair,
+            attributes.ToDictionary(x => x.Type, x => x), token.IsCloseTag);
 
     public static IToken CreateTextToken(string content) =>
         new MarkdownToken(content, TokenType.Text);
