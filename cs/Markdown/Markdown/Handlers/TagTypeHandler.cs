@@ -9,7 +9,10 @@ public class TagTypeHandler : ITokenHandler
     { 
         { MarkdownConstants.SingleUnderscore, TagType.Italic }, 
         { MarkdownConstants.DoubleUnderscore, TagType.Strong }, 
-        { MarkdownConstants.Header, TagType.Header } 
+        { MarkdownConstants.Header, TagType.Header },
+        { MarkdownConstants.StartImage, TagType.Image },
+        { MarkdownConstants.MiddleImage, TagType.Image },
+        { MarkdownConstants.EndImage, TagType.Image }
     }; 
  
     public IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens) =>

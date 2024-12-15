@@ -15,8 +15,8 @@ public class ImageTagConverter : ITagConverter
 
     private static string GetResultContent(IToken token) =>
         $"<{HtmlTagCreator.GetStringContent(token.TagType)} " +
-        $"src=\"{token.Attributes![AttributeType.Src]}\" " +
-        $"alt=\"{token.Attributes[AttributeType.Alt]}\">";
+        $"src=\"{token.Attributes![AttributeType.Src].Value}\" " +
+        $"alt=\"{token.Attributes[AttributeType.Alt].Value}\">";
 
     private static bool IsHasAttributes(IToken token) =>
         token.Attributes != null &&

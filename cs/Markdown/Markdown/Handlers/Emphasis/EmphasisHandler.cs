@@ -12,7 +12,8 @@ public class EmphasisHandler : EmphasisHandlerBase
         new IntersectEmphasisHandler(),
         new NestedEmphasisHandler(),
         new TextInsideEmphasisHandler(),
-        new DifferentWordsEmphasisHandler()
+        new DifferentWordsEmphasisHandler(),
+        new NonPairEmphasisTagHandler()
     ];
 
     public override IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens)

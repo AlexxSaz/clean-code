@@ -1,10 +1,10 @@
 ﻿using Markdown.Markdown.Tokens;
 
-namespace Markdown.Markdown.Handlers;
+namespace Markdown.Markdown.Handlers.Emphasis;
 
-public class NonPairTagHandler : ITokenHandler
+public class NonPairEmphasisTagHandler : EmphasisHandlerBase
 {
-    public IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens)
+    public override IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens)
     {
         var handledTokens = new List<IToken>();
         var tagStack = new Stack<IToken>();
@@ -19,12 +19,10 @@ public class NonPairTagHandler : ITokenHandler
                 indexTagQueue.Dequeue();
                 continue;
             }
-            
-            if (token.Type is TokenType.Tag)
-            {
-                indexTagQueue.Enqueue(i);
-                tagStack.Push(token);
-            }
+
+            if (!IsEmphasisTag(token)) continue;
+            indexTagQueue.Enqueue(i);
+            tagStack.Push(token);
         }
 
         for (var i = 0; i < tokens.Count; i++)
@@ -43,4 +41,6 @@ public class NonPairTagHandler : ITokenHandler
 
         return handledTokens;
     }
+    
+    
 }
