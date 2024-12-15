@@ -5,11 +5,12 @@ namespace Markdown.Html;
 
 public class HtmlTagConverter
 {
-    private readonly ITagConverter[] _htmlTags =
+    private readonly ITagConverter[] htmlTags =
     [
         new HeaderTagConverter(),
         new StrongTagConverter(),
-        new ItalicTagConverter()
+        new ItalicTagConverter(),
+        new ImageTagConverter()
     ];
 
     public string Convert(IToken token)
@@ -17,7 +18,7 @@ public class HtmlTagConverter
         if (token.TagType is TagType.None)
             return token.Content;
         
-        foreach (var htmlTag in _htmlTags)
+        foreach (var htmlTag in htmlTags)
         {
             var isConvertedToHtml = htmlTag.TryConvert(token, out var resultHtmlTag);
 
