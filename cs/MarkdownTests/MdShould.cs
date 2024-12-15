@@ -17,7 +17,7 @@ public class MdShould
     [TestCase("_be_gin", ExpectedResult = "<em>be</em>gin", TestName = "Render italic text at word start")]
     [TestCase("mi_dd_le", ExpectedResult = "mi<em>dd</em>le", TestName = "Render italic text in word middle")]
     [TestCase("the e_nd._", ExpectedResult = "the e<em>nd.</em>", TestName = "Render italic text at word end")]
-    public string RenderItalicText_ShouldParseCorrectly(string markdownText) =>
+    public string RenderItalicText_ParseCorrectly(string markdownText) =>
         markdown.Render(markdownText);
 
     [TestCase("with numbers_12_3 text", ExpectedResult = "with numbers_12_3 text",
@@ -29,21 +29,21 @@ public class MdShould
     [TestCase("text _text text", ExpectedResult = "text _text text", TestName = "Should not parse with only start tag")]
     [TestCase("text t_ext ___te_xt", ExpectedResult = "text t_ext ___te_xt",
         TestName = "Should not parse with multiple underscores")]
-    public string RenderItalicText_ShouldNotParseInvalidCases(string markdownText) =>
+    public string RenderItalicText_NotParseInvalidCases(string markdownText) =>
         markdown.Render(markdownText);
 
     [TestCase("__text__", ExpectedResult = "<strong>text</strong>", TestName = "Render basic bold text")]
-    public string RenderBoldText_ShouldParseCorrectly(string markdownText) =>
+    public string RenderBoldText_ParseCorrectly(string markdownText) =>
         markdown.Render(markdownText);
 
     [TestCase(@"\_text\_", ExpectedResult = @"_text_", TestName = "Handle single escaped underscore")]
     [TestCase(@"\\\_text\\\_", ExpectedResult = @"\_text\_", TestName = "Handle triple escaped underscore")]
-    public string RenderEscapedText_ShouldHandleEscapedUnderscores(string markdownText) =>
+    public string RenderEscapedText_HandleEscapedUnderscores(string markdownText) =>
         markdown.Render(markdownText);
 
     [TestCase(@"\\_text\\_", ExpectedResult = @"\<em>text\</em>", TestName = "Handle double escaped underscore")]
     [TestCase(@"\\\\_text\\\\_", ExpectedResult = @"\\<em>text\\</em>", TestName = "Handle quad escaped underscore")]
-    public string RenderEscapedText_ShouldPreserveEscapedCharacters(string markdownText) =>
+    public string RenderEscapedText_PreserveEscapedCharacters(string markdownText) =>
         markdown.Render(markdownText);
 
     [TestCase("diffe_rent wo_rds", ExpectedResult = "diffe_rent wo_rds", TestName = "Render italic in different words")]
@@ -56,22 +56,29 @@ public class MdShould
         TestName = "Handle complex tag intersections")]
     [TestCase(@"Here sim\bols of shielding\ \should stay.\",
         ExpectedResult = @"Here sim\bols of shielding\ \should stay.\", TestName = "Preserve escaped characters")]
-    public string RenderMixedFormatting_ShouldHandleComplexCases(string markdownText) =>
+    public string RenderMixedFormatting_HandleComplexCases(string markdownText) =>
         markdown.Render(markdownText);
 
     [TestCase("# text", ExpectedResult = "<h1>text</h1>", TestName = "Render basic header")]
     [TestCase("# _text_", ExpectedResult = "<h1><em>text</em></h1>", TestName = "Render header with italic text")]
     [TestCase("# t __t _t_ t__", ExpectedResult = "<h1>t <strong>t <em>t</em> t</strong></h1>",
         TestName = "Render header with mixed formatting")]
-    public string RenderHeaders_ShouldParseCorrectly(string markdownText) =>
+    public string RenderHeaders_ParseCorrectly(string markdownText) =>
         markdown.Render(markdownText);
 
     [TestCase("#_text_", ExpectedResult = "#<em>text</em>", TestName = "Should not parse header without space")]
-    public string RenderHeaders_ShouldNotParseInvalidCases(string markdownText) =>
+    public string RenderHeaders_NotParseInvalidCases(string markdownText) =>
+        markdown.Render(markdownText);
+
+    [TestCase(@"![Alt text](URL)", ExpectedResult = """<img src="URL" alt="Alt text">""",
+        TestName = "Handle picture with alt")]
+    [TestCase(@"![Alt text URL)", ExpectedResult = "![Alt text URL)",
+        TestName = "Not handle picture with alt")]
+    public string RenderPictures_Parse(string markdownText) =>
         markdown.Render(markdownText);
 
     [TestCase("MarkdownSpec.md", TestName = "Convert MarkdownSpec file to HTML")]
-    public void RenderMarkdownFile_ShouldCreateHtmlFile(string markdownPath)
+    public void RenderMarkdownFile_CreateHtmlFile(string markdownPath)
     {
         var markdownText = File.ReadAllText(Path.Combine(TestsFilesDirectory, markdownPath));
         var htmlPath = Path.ChangeExtension(markdownPath, ".html");
