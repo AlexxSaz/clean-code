@@ -1,3 +1,6 @@
+using Markdown.Markdown.Tags.Image;
+using Markdown.Markdown.Tags.Underscore;
+
 namespace Markdown.Markdown.Tags;
 
 public static class MarkdownTagValidator
@@ -6,7 +9,10 @@ public static class MarkdownTagValidator
     [
         new StrongTagValidator(),
         new ItalicTagValidator(),
-        new HeaderTagValidator()
+        new HeaderTagValidator(),
+        new StartImageTagValidator(),
+        new MiddleImageTagValidator(),
+        new EndImageTagValidator()
     ];
 
     public static bool Validate(string content) =>
