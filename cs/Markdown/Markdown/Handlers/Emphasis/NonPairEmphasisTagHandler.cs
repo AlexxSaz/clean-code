@@ -6,7 +6,6 @@ public class NonPairEmphasisTagHandler : EmphasisHandlerBase
 {
     public override IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens)
     {
-        var handledTokens = new List<IToken>();
         var tagStack = new Stack<IToken>();
         var indexTagQueue = new Queue<int>();
         for (var i = 0; i < tokens.Count; i++)
@@ -25,22 +24,6 @@ public class NonPairEmphasisTagHandler : EmphasisHandlerBase
             tagStack.Push(token);
         }
 
-        for (var i = 0; i < tokens.Count; i++)
-        {
-            var token = tokens[i];
-
-            if (indexTagQueue.Count > 0 && indexTagQueue.Peek() == i)
-            {
-                indexTagQueue.Dequeue();
-                handledTokens.Add(MarkdownTokenCreator.CreateTextToken(token.Content));
-                continue;
-            }
-            
-            handledTokens.Add(token);
-        }
-
-        return handledTokens;
+        return RewriteTagsToText(tokens, indexTagQueue.ToHashSet());
     }
-    
-    
 }
