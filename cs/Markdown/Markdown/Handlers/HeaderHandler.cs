@@ -7,39 +7,26 @@ internal class HeaderHandler : ITokenHandler
 {
     public IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens)
     {
-        IToken? previousToken = null;
-        var handledTokens = new List<IToken>();
+        if (tokens.Count < 1) return tokens;
 
-        for (var i = 0; i < tokens.Count; i++)
-        {
-            var currentToken = tokens[i];
+        var firstToken = tokens[0];
 
-            if (previousToken != null &&
-                currentToken.Type is TokenType.Tag && currentToken.TagType is TagType.Header)
-            {
-                handledTokens.Add(MarkdownTokenCreator.CreateTextToken(currentToken.Content));
-                continue;
-            }
-            
-            if (previousToken == null &&
-                currentToken.Type is TokenType.Tag && currentToken.TagType is TagType.Header)
-            {
-                var openHeaderTag = currentToken;
-                while (i < tokens.Count - 1 && currentToken.Type is not TokenType.NewLine)
-                {
-                    handledTokens.Add(currentToken);
-                    currentToken = tokens[++i];
-                }
+        return IsHeaderTag(firstToken)
+            ? HandleTokensListWithHeaderTag(tokens)
+            : HandleTokensListWithoutHeaderTag(tokens);
+    }
 
-                handledTokens.Add(currentToken);
-                handledTokens.Add(
-                    MarkdownTokenCreator.CreateCloseTag(openHeaderTag, openHeaderTag.TagType, openHeaderTag));
-            }
-            else handledTokens.Add(currentToken);
-
-            previousToken = currentToken;
-        }
-
+    private static List<IToken> HandleTokensListWithHeaderTag(IReadOnlyList<IToken> tokens)
+    {
+        var openHeaderTag = tokens[0];
+        var handledTokens = new List<IToken>(tokens)
+            { MarkdownTokenCreator.CreateCloseTag(openHeaderTag, openHeaderTag.TagType, openHeaderTag) };
         return handledTokens;
     }
+
+    private static List<IToken> HandleTokensListWithoutHeaderTag(IReadOnlyList<IToken> tokens) =>
+        tokens.Select(token => IsHeaderTag(token) ? MarkdownTokenCreator.CreateTextToken(token.Content) : token)
+            .ToList();
+
+    private static bool IsHeaderTag(IToken token) => token.Type is TokenType.Tag && token.TagType is TagType.Header;
 }
