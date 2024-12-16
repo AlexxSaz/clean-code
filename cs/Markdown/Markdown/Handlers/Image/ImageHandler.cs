@@ -1,5 +1,4 @@
-﻿using Markdown.Html.Tags;
-using Markdown.Markdown.Tokens;
+﻿using Markdown.Markdown.Tokens;
 
 namespace Markdown.Markdown.Handlers.Image;
 
@@ -9,7 +8,7 @@ public class ImageHandler : ImageHandlerBase
     [
         new PairImageHandler(),
         new NonPairImageHandler(),
-        new TransformImageHandler()
+        new UnionImageHandler()
     ];
 
     public override IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens)

@@ -1,5 +1,4 @@
-﻿using Markdown.Extensions;
-using Markdown.Markdown.Tokens;
+﻿using Markdown.Markdown.Tokens;
 
 namespace Markdown.Markdown.Handlers.Image;
 

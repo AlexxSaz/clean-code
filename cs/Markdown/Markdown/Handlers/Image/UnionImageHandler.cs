@@ -4,8 +4,10 @@ using Markdown.Markdown.Tokens;
 
 namespace Markdown.Markdown.Handlers.Image;
 
-public class TransformImageHandler : ImageHandlerBase
+public class UnionImageHandler : ImageHandlerBase
 {
+    private readonly AttributeType[] attributeTypes = [AttributeType.Alt, AttributeType.Src];
+
     public override IReadOnlyList<IToken> Handle(IReadOnlyList<IToken> tokens)
     {
         var handledAttributes = new HashSet<IAttribute>();
@@ -18,25 +20,31 @@ public class TransformImageHandler : ImageHandlerBase
 
             if (!IsImageTag(token)) continue;
             startIndex = i;
-
-            var altAttribute = AttributeCreator.CreateImageAttribute(AttributeType.Alt,
-                GetAttributeContent(tokens, token, ref i));
-
-            var srcAttribute = AttributeCreator.CreateImageAttribute(AttributeType.Src,
-                GetAttributeContent(tokens, token, ref i));
-            handledAttributes.Add(altAttribute);
-            handledAttributes.Add(srcAttribute);
+            handledAttributes = GetFilledAttributesSet(tokens, ref i);
             endIndex = i;
         }
 
-        return handledAttributes.Count != 2
+        return handledAttributes.Count != attributeTypes.Length
             ? tokens
-            : ReplaceImageTagsByOne(tokens,
-                MarkdownTokenCreator.CreateTagWithAttributes(tokens[startIndex], handledAttributes), startIndex,
+            : HandleTokensWithUnionImageTag(tokens,
+                MarkdownTokenCreator.CreateTagWithAttributes(tokens[startIndex], handledAttributes),
+                startIndex,
                 endIndex);
     }
 
-    private static string GetAttributeContent(IReadOnlyList<IToken> tokens, IToken token, ref int i)
+    private HashSet<IAttribute> GetFilledAttributesSet(IReadOnlyList<IToken> tokens, ref int i)
+    {
+        var handledAttributes = new HashSet<IAttribute>();
+        foreach (var attrType in attributeTypes)
+        {
+            var content = GetAttributeContent(tokens, ref i);
+            handledAttributes.Add(AttributeCreator.CreateImageAttribute(attrType, content));
+        }
+
+        return handledAttributes;
+    }
+
+    private static string GetAttributeContent(IReadOnlyList<IToken> tokens, ref int i)
     {
         var attributeContent = new StringBuilder();
         var lastToken = tokens[i];
@@ -45,13 +53,13 @@ public class TransformImageHandler : ImageHandlerBase
         return attributeContent.ToString();
     }
 
-    private static List<IToken> ReplaceImageTagsByOne(IReadOnlyList<IToken> tokens, IToken newImageTag, int startIndex,
+    private static List<IToken> HandleTokensWithUnionImageTag(IReadOnlyList<IToken> tokens, IToken unionImageTag, int startIndex,
         int endIndex)
     {
         var handledTokens = new List<IToken>();
         for (var i = 0; i < startIndex; i++)
             handledTokens.Add(tokens[i]);
-        handledTokens.Add(newImageTag);
+        handledTokens.Add(unionImageTag);
         for (var i = endIndex + 1; i < tokens.Count; i++)
             handledTokens.Add(tokens[i]);
         return handledTokens;
